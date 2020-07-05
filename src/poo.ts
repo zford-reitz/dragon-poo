@@ -1,6 +1,4 @@
-// @flow
 import { Location } from "./location";
-import { isEqual } from "lodash";
 
 export class Poo {
     location: Location;

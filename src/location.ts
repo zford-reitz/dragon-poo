@@ -1,4 +1,3 @@
-// @flow
 export class Location {
     row: number;
     column: number;

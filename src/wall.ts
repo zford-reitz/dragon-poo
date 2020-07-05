@@ -1,4 +1,3 @@
-// @flow
 import { Location } from "./location";
 import { isEqual } from "lodash";
 
