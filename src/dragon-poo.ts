@@ -3,6 +3,8 @@ import { Location } from './location';
 import { Wall } from './wall';
 import * as _ from 'lodash';
 import { Poo } from './poo';
+import { Ctx } from 'boardgame.io';
+import { GameState } from './GameState';
 
 export const DRAGON = "Dragon";
 
@@ -37,11 +39,11 @@ function bounce(direction: Direction): Direction {
   return direction;
 }
 
-export function setupGame(ctx: any) {
+export function setupGame() {
   // TODO zeb can't assume 4 players
   // TODO zeb let players choose color at start of game, rather than making it a part of setup
 
-  const G = {
+  const game: GameState = {
     players: {
       "0": {
         entranceRows: [1, 2, 3],
@@ -54,36 +56,28 @@ export function setupGame(ctx: any) {
         poo: 0
       }
     },
-    flow: {
-      endGameIf: (G: any, ctx: any) => {
-        const winningPlayer = _.find(G.players, p => p.poo >= 5);
-        if (winningPlayer) {
-          return {winner: winningPlayer};
-        }
-      }
-    },
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as any)),
     walls: [],
     pooTokens: []
   };
 
-  G.cells[2][2].push(DRAGON);
+  game.cells[2][2].push(DRAGON);
 
-  return G;
+  return game;
 }
 
-export function enterBoard(G: any, ctx: any, row: number, column: number) {
-  if (findPlayerLocation(ctx.playerID, G.cells)) {
+export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) {
+  if (findPlayerLocation(ctx.currentPlayer, G.cells)) {
     return INVALID_MOVE;
   }
   
-  let player = G.players[ctx.playerID];
+  let player = G.players[ctx.currentPlayer];
   if (
     player.entranceRows.includes(row) &&
     player.entranceColumns.includes(column) &&
     isValidMoveLocation({row: row, column: column}, G.cells)
   ) {
-    G.cells[row][column].push(ctx.playerID);
+    G.cells[row][column].push(ctx.currentPlayer);
   } else {
       return INVALID_MOVE;
   }
