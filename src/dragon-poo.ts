@@ -56,7 +56,7 @@ export function setupGame() {
         poo: 0
       }
     },
-    cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as any)),
+    cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
     pooTokens: []
   };
@@ -89,36 +89,36 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
  * @param {*} G
  * @param {*} ctx
  */
-export function moveGoblin(G: any, ctx: any, direction: Direction) {
-  const initialLocation: Location | undefined = findPlayerLocation(ctx.playerID, G.cells);
+export function moveGoblin(G: GameState, ctx: Ctx, direction: Direction): undefined | typeof INVALID_MOVE {
+  const initialLocation: Location | undefined = findPlayerLocation(ctx.currentPlayer, G.cells);
 
   if (initialLocation) {
     const newLocation: Location = moveFrom(initialLocation, direction);
     if (isValidMoveLocation(newLocation, G.cells)) {
       G.cells[initialLocation.row][initialLocation.column] = 
-        removeFromLocation(G.cells[initialLocation.row][initialLocation.column], ctx.playerID);
-      G.cells[newLocation.row][newLocation.column].push(ctx.playerID);
+        removeFromLocation(G.cells[initialLocation.row][initialLocation.column], ctx.currentPlayer);
+      G.cells[newLocation.row][newLocation.column].push(ctx.currentPlayer);
     }
   }
 
   return INVALID_MOVE;
 }
 
-export function removeFromLocation(cell: Array<string>, playerID: string): Array<string> {
+export function removeFromLocation(cell: string[], playerID: string): string[] {
   return cell.filter((e) => e !== playerID);
 }
 
-function isLocationOnBoard(newLocation: Location, cells: any[][]) {
+function isLocationOnBoard(newLocation: Location, cells: string[][][]) {
   return newLocation.row >= 0 && cells.length > newLocation.row
     && newLocation.column >= 0 && cells[0].length > newLocation.column;
 }
 
-function isValidMoveLocation(newLocation: Location, cells: any[][]) {
+function isValidMoveLocation(newLocation: Location, cells: string[][][]) {
   return isLocationOnBoard(newLocation, cells)
     && !cells[newLocation.row][newLocation.column].includes(DRAGON);
 }
 
-export function findPlayerLocation(playerID: string, grid: Array<Array<Array<string>>>): Location | undefined {
+export function findPlayerLocation(playerID: string, grid: string[][][]): Location | undefined {
   for (let row = 0; row < grid.length; row++) {
     for (let column = 0; column < grid[row].length; column++) {
       if (grid[row][column].includes(playerID)) {
@@ -128,7 +128,7 @@ export function findPlayerLocation(playerID: string, grid: Array<Array<Array<str
   }  
 }
 
-export function findDragonLocation(grid: Array<Array<Array<string>>>): Location | undefined {
+export function findDragonLocation(grid: string[][][]): Location | undefined {
   for (let row = 0; row < grid.length; row++) {
     for (let column = 0; column < grid[row].length; column++) {
       if (grid[row][column].includes(DRAGON)) {
@@ -138,12 +138,12 @@ export function findDragonLocation(grid: Array<Array<Array<string>>>): Location 
   }
 }
 
-export function moveDragon(G: any, direction: Direction) {
+export function moveDragon(G: GameState, direction: Direction) {
   const initialLocation: Location | undefined = findDragonLocation(G.cells);
 
   if (initialLocation) {
     const newLocation: Location = moveFrom(initialLocation, direction);
-    const blockingWall: Wall = findBlockingWall(G, initialLocation, newLocation);
+    const blockingWall: Wall | undefined = findBlockingWall(G, initialLocation, newLocation);
     if (blockingWall) {
       // don't move. eat wall instead.
       _.remove(G.walls, blockingWall);
@@ -176,12 +176,12 @@ export function moveDragon(G: any, direction: Direction) {
   }
 }
 
-function findBlockingWall(G: any, initialLocation: Location, newLocation: Location): Wall {
+function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
   return _.find(G.walls, wall => wall.isBetween(initialLocation, newLocation));
 }
 
 
-export function unsafeMoveDragon(G: any, row: number, column: number) {
+export function unsafeMoveDragon(G: GameState, row: number, column: number) {
   const dragonLocationBefore: Location | undefined = findDragonLocation(G.cells);
   if (dragonLocationBefore) {
       G.cells[dragonLocationBefore.row][dragonLocationBefore.column] = 
@@ -191,18 +191,18 @@ export function unsafeMoveDragon(G: any, row: number, column: number) {
   G.cells[row][column].push(DRAGON);
 }
 
-export function placeWall(G:any, location: Location, direction: Direction) {
+export function placeWall(G: GameState, location: Location, direction: Direction) {
   G.walls.push(new Wall(location, moveFrom(location, direction)));
 }
 
-export function createDragonPoo(G: any) {
+export function createDragonPoo(G: GameState) {
   const dragonLocation = findDragonLocation(G.cells);
   if (dragonLocation) {
     G.pooTokens.push(new Poo(dragonLocation));
   }
 }
 
-export function pickUpPoo(G: any, playerID: string) {
+export function pickUpPoo(G: GameState, playerID: string) {
   const playerLocation = findPlayerLocation(playerID, G.cells);
   if (playerLocation) {
     G.players[playerID].poo += _.remove(G.pooTokens, (poo: any) => _.isEqual((poo as Poo).location, playerLocation)).length;

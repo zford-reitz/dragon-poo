@@ -1,6 +1,7 @@
-import {move, setupGame, findPlayerLocation, DRAGON, findDragonLocation, removeFromLocation, unsafeMoveDragon, moveGoblin, pickUpPoo} from "./dragon-poo";
+import {setupGame, findPlayerLocation, removeFromLocation, pickUpPoo} from "./dragon-poo";
 import {Poo} from "./poo";
 import {Location} from './location';
+import { GameState } from "./GameState";
 
 it('player picks up no poo because there is no poo at their location', () => {
     const G = setupGame();
@@ -36,7 +37,7 @@ it('player picks up all poo at location', () => {
     expect(G.players[0].poo).toBe(4);
 });
 
-function movePlayerTo(G, playerID, row, column) {
+function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {
     const playerLocationBefore = findPlayerLocation(playerID, G.cells);
     if (playerLocationBefore) {
         G.cells[playerLocationBefore.row][playerLocationBefore.column] =

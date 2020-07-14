@@ -1,6 +1,7 @@
 import {moveDragon, setupGame, findPlayerLocation, DRAGON, removeFromLocation, unsafeMoveDragon, placeWall, createDragonPoo} from "./dragon-poo";
 import { Location } from "./location";
 import {filter, isEqual} from "lodash";
+import { GameState } from "./GameState";
 
 it('dragon moves one space left', () => {
     const G = setupGame();
@@ -62,7 +63,7 @@ it('dragon stomps on player, causing player to move back to starting zone and dr
     expect(filter(G.pooTokens, (poo) => isEqual(poo.location, playerLocation)).length).toBe(3);
 });
 
-function movePlayerTo(G, playerID, row, column) {
+function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {
     const playerLocationBefore = findPlayerLocation(playerID, G.cells);
     if (playerLocationBefore) {
         G.cells[playerLocationBefore.row][playerLocationBefore.column] =
