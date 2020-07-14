@@ -92,28 +92,31 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
 export function moveGoblin(G: GameState, ctx: Ctx, direction: Direction): undefined | typeof INVALID_MOVE {
   const initialLocation: Location | undefined = findPlayerLocation(ctx.currentPlayer, G.cells);
 
-  if (initialLocation) {
-    const newLocation: Location = moveFrom(initialLocation, direction);
-    if (isValidMoveLocation(newLocation, G.cells)) {
-      G.cells[initialLocation.row][initialLocation.column] = 
-        removeFromLocation(G.cells[initialLocation.row][initialLocation.column], ctx.currentPlayer);
-      G.cells[newLocation.row][newLocation.column].push(ctx.currentPlayer);
-    }
+  if (!initialLocation) {
+    return INVALID_MOVE;
   }
 
-  return INVALID_MOVE;
+  const newLocation: Location = moveFrom(initialLocation, direction);
+  if (!isValidMoveLocation(newLocation, G.cells)) {
+    return INVALID_MOVE;
+  }
+
+  G.cells[initialLocation.row][initialLocation.column] = 
+    removeFromLocation(G.cells[initialLocation.row][initialLocation.column], ctx.currentPlayer);
+  G.cells[newLocation.row][newLocation.column].push(ctx.currentPlayer);
+
 }
 
 export function removeFromLocation(cell: string[], playerID: string): string[] {
   return cell.filter((e) => e !== playerID);
 }
 
-function isLocationOnBoard(newLocation: Location, cells: string[][][]) {
+function isLocationOnBoard(newLocation: Location, cells: string[][][]): boolean {
   return newLocation.row >= 0 && cells.length > newLocation.row
     && newLocation.column >= 0 && cells[0].length > newLocation.column;
 }
 
-function isValidMoveLocation(newLocation: Location, cells: string[][][]) {
+function isValidMoveLocation(newLocation: Location, cells: string[][][]): boolean {
   return isLocationOnBoard(newLocation, cells)
     && !cells[newLocation.row][newLocation.column].includes(DRAGON);
 }
