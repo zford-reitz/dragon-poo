@@ -46,3 +46,12 @@ it('top player cannot enter at top of left side', () => {
     expect(actualInvalidMove).toBe(INVALID_MOVE);
     expect(G.cells[1][0]).not.toContain("1");
 });
+
+it('player cannot enter the board if that player is already on the board', () => {
+    const G = setupGame();
+    enterBoard(G, {playerID: "0"}, 3, 0);
+    const actualInvalidMove = enterBoard(G, {playerID: "0"}, 2, 0);
+    
+    expect(actualInvalidMove).toBe(INVALID_MOVE);
+    expect(G.cells[2][0]).not.toContain("1");
+});

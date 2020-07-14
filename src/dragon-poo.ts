@@ -73,6 +73,10 @@ export function setupGame(ctx: any) {
 }
 
 export function enterBoard(G: any, ctx: any, row: number, column: number) {
+  if (findPlayerLocation(ctx.playerID, G.cells)) {
+    return INVALID_MOVE;
+  }
+  
   let player = G.players[ctx.playerID];
   if (
     player.entranceRows.includes(row) &&
