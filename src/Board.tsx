@@ -1,5 +1,6 @@
 import React from 'react';
 import { BoardProps } from 'boardgame.io';
+import './App.css';
 
 export class DragonPooBoard extends React.Component<BoardProps> {
   render() {
@@ -25,10 +26,16 @@ export class DragonPooBoard extends React.Component<BoardProps> {
     }
 
     return (
-      <div>
-        <table id="board">
-          <tbody>{tbody}</tbody>
-        </table>
+      <div className="grid">
+        <div className="start-zone-1"></div>        
+        <div className="start-zone-2"></div>        
+        <div className="center">
+          <table id="board">
+            <tbody>{tbody}</tbody>
+          </table>
+        </div>
+        <div className="start-zone-3"></div>        
+        <div className="start-zone-4"></div>        
       </div>
     );
   }
