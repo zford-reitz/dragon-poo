@@ -2,11 +2,25 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { Location } from './location';
 import { Wall } from './wall';
 import * as _ from 'lodash';
-import { Poo } from './poo';
 import { Ctx } from 'boardgame.io';
 import { GameState, DragonDieColor } from './GameState';
 
+type ColorDirections = {
+  orange: Direction;
+  blue: Direction;
+  green: Direction;
+  white: Direction;
+  brown: undefined;
+}
+
 const DRAGON_DIE_COLORS: DragonDieColor[] = ['orange', 'blue', 'green', 'white', 'brown', 'brown'];
+const DIRECTIONS_BY_COLOR: ColorDirections = {
+  orange: "left",
+  blue: "up",
+  green: "right",
+  white: "down",
+  brown: undefined
+};
 export const DRAGON = "Dragon";
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
@@ -14,13 +28,13 @@ export type Direction = 'up' | 'down' | 'left' | 'right';
 function moveFrom(startLocation: Location, direction: Direction): Location {
   switch (direction) {
     case 'up':
-        return new Location(startLocation.row - 1, startLocation.column);
+        return {row: startLocation.row - 1, column: startLocation.column};
     case 'down':
-      return new Location(startLocation.row + 1, startLocation.column);
+      return {row: startLocation.row + 1, column: startLocation.column};
     case 'left':
-      return new Location(startLocation.row, startLocation.column - 1);
+      return {row: startLocation.row, column: startLocation.column - 1};
     case 'right':
-      return new Location(startLocation.row, startLocation.column + 1);
+      return {row: startLocation.row, column: startLocation.column + 1};
   }
 
   return startLocation;
@@ -59,7 +73,6 @@ export function setupGame() {
     },
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
-    pooTokens: [],
     dragonDieRoll: 'brown'
   };
 
@@ -77,9 +90,10 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
   if (
     player.entranceRows.includes(row) &&
     player.entranceColumns.includes(column) &&
-    isValidMoveLocation({row: row, column: column}, G.cells)
+    isValidMoveLocation(G, {row: row, column: column})
   ) {
     G.cells[row][column].push(ctx.currentPlayer);
+    endTurn(G, ctx);
   } else {
       return INVALID_MOVE;
   }
@@ -99,45 +113,56 @@ export function moveGoblin(G: GameState, ctx: Ctx, direction: Direction): undefi
   }
 
   const newLocation: Location = moveFrom(initialLocation, direction);
-  if (!isValidMoveLocation(newLocation, G.cells)) {
+  if (!isValidMoveLocation(G, newLocation)) {
     return INVALID_MOVE;
   }
 
-  G.cells[initialLocation.row][initialLocation.column] = 
-    removeFromLocation(G.cells[initialLocation.row][initialLocation.column], ctx.currentPlayer);
-  G.cells[newLocation.row][newLocation.column].push(ctx.currentPlayer);
-
+  _.remove(getPiecesAt(G, initialLocation), ctx.currentPlayer);
+  getPiecesAt(G, newLocation).push(ctx.currentPlayer);
+  
+  endTurn(G, ctx);
 }
 
-export function removeFromLocation(cell: string[], playerID: string): string[] {
-  return cell.filter((e) => e !== playerID);
+export function removeFromLocation(G: GameState, location: Location, piece: string): void {
+  _.pull(getPiecesAt(G, location), piece);
 }
 
-function isLocationOnBoard(newLocation: Location, cells: string[][][]): boolean {
-  return newLocation.row >= 0 && cells.length > newLocation.row
-    && newLocation.column >= 0 && cells[0].length > newLocation.column;
+export function addToLocation(G: GameState, location: Location, piece: string): void {
+  getPiecesAt(G, location).push(piece);
 }
 
-function isValidMoveLocation(newLocation: Location, cells: string[][][]): boolean {
-  return isLocationOnBoard(newLocation, cells)
-    && !cells[newLocation.row][newLocation.column].includes(DRAGON);
+export function movePiece(G: GameState, piece: string, from?: Location, to?: Location): void {
+  if (from) {
+    removeFromLocation(G, from, piece);
+  }
+
+  if (to) {
+    addToLocation(G, to, piece);
+  }
+}
+
+function isLocationOnBoard(G: GameState, location: Location): boolean {
+  return location.row >= 0 && G.cells.length > location.row
+    && location.column >= 0 && G.cells[0].length > location.column;
+}
+
+function isValidMoveLocation(G: GameState, newLocation: Location): boolean {
+  return isLocationOnBoard(G, newLocation) && !getPiecesAt(G, newLocation).includes(DRAGON);
 }
 
 export function findPlayerLocation(playerID: string, grid: string[][][]): Location | undefined {
-  for (let row = 0; row < grid.length; row++) {
-    for (let column = 0; column < grid[row].length; column++) {
-      if (grid[row][column].includes(playerID)) {
-        return new Location(row, column);
-      }
-    }
-  }  
+  return findPiece(grid, playerID);
 }
 
 export function findDragonLocation(grid: string[][][]): Location | undefined {
+  return findPiece(grid, DRAGON);
+}
+
+function findPiece(grid: string[][][], piece: string): Location | undefined {
   for (let row = 0; row < grid.length; row++) {
     for (let column = 0; column < grid[row].length; column++) {
-      if (grid[row][column].includes(DRAGON)) {
-        return new Location(row, column);
+      if (grid[row][column].includes(piece)) {
+        return {row: row, column: column};
       }
     }
   }
@@ -148,33 +173,30 @@ export function moveDragon(G: GameState, direction: Direction) {
 
   if (initialLocation) {
     const newLocation: Location = moveFrom(initialLocation, direction);
-    const blockingWall: Wall | undefined = findBlockingWall(G, initialLocation, newLocation);
+    const blockingWall = findBlockingWall(G, initialLocation, newLocation);
     if (blockingWall) {
       // don't move. eat wall instead.
       _.remove(G.walls, blockingWall);
-    } else if (isLocationOnBoard(newLocation, G.cells)) {
-      G.cells[initialLocation.row][initialLocation.column] = 
-        removeFromLocation(G.cells[initialLocation.row][initialLocation.column], DRAGON);
-      G.cells[newLocation.row][newLocation.column].push(DRAGON);
+    } else if (isLocationOnBoard(G, newLocation)) {
+      _.pull(getPiecesAt(G, initialLocation), DRAGON);
+      getPiecesAt(G, newLocation).push(DRAGON);
     } else {
       // go the other way instead
       const bounceDirection = bounce(direction);
-      const bounceLocation: Location = moveFrom(initialLocation, bounceDirection);
-      G.cells[initialLocation.row][initialLocation.column] = 
-        removeFromLocation(G.cells[initialLocation.row][initialLocation.column], DRAGON);
-      G.cells[bounceLocation.row][bounceLocation.column].push(DRAGON);
+      const bounceLocation = moveFrom(initialLocation, bounceDirection);
+      _.pull(getPiecesAt(G, initialLocation), DRAGON);
+      getPiecesAt(G, bounceLocation).push(DRAGON);
     }
   }
 
   // do we stomp anyone?
-  const newDragonLocation: Location | undefined = findDragonLocation(G.cells);
+  const newDragonLocation = findDragonLocation(G.cells);
   if (newDragonLocation) {
     const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
-    _.remove(cell, e => e !== DRAGON).forEach((playerID: any) => {
+    _.remove(cell, e => e !== DRAGON && e !== "P").forEach((playerID: any) => {
       const player = G.players[playerID as number];
-      var i;
-      for (i = 0; i < player.poo; i++) {
-        G.pooTokens.push(new Poo(newDragonLocation));
+      for (var i = 0; i < player.poo; i++) {
+        createDragonPoo(G);
       }
       player.poo = 0;
     });
@@ -187,13 +209,7 @@ function findBlockingWall(G: GameState, initialLocation: Location, newLocation: 
 
 
 export function unsafeMoveDragon(G: GameState, row: number, column: number) {
-  const dragonLocationBefore: Location | undefined = findDragonLocation(G.cells);
-  if (dragonLocationBefore) {
-      G.cells[dragonLocationBefore.row][dragonLocationBefore.column] = 
-      removeFromLocation(G.cells[dragonLocationBefore.row][dragonLocationBefore.column], DRAGON);
-  }
-
-  G.cells[row][column].push(DRAGON);
+  movePiece(G, DRAGON, findDragonLocation(G.cells), {row: row, column: column});
 }
 
 export function placeWall(G: GameState, location: Location, direction: Direction) {
@@ -203,14 +219,14 @@ export function placeWall(G: GameState, location: Location, direction: Direction
 export function createDragonPoo(G: GameState) {
   const dragonLocation = findDragonLocation(G.cells);
   if (dragonLocation) {
-    G.pooTokens.push(new Poo(dragonLocation));
+    getPiecesAt(G, dragonLocation).push("P");
   }
 }
 
 export function pickUpPoo(G: GameState, playerID: string) {
   const playerLocation = findPlayerLocation(playerID, G.cells);
   if (playerLocation) {
-    G.players[playerID].poo += _.remove(G.pooTokens, (poo: any) => _.isEqual((poo as Poo).location, playerLocation)).length;
+    G.players[playerID].poo += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === "P").length;
   }
 }
 
@@ -219,6 +235,30 @@ export function rollDragonDie(G: GameState, ctx: Ctx) {
   
   if (rolledNumber) {
     G.dragonDieRoll = DRAGON_DIE_COLORS[rolledNumber - 1];
+  }
+}
+
+function getPiecesAt(G: GameState, location: Location) {
+  return G.cells[location.row][location.column];
+}
+
+function endTurn(G: GameState, ctx: Ctx) {
+  pickUpPoo(G, ctx.currentPlayer);
+  rollDragonDie(G, ctx);
+
+  const dragonMoveDirection = DIRECTIONS_BY_COLOR[G.dragonDieRoll];
+  if (dragonMoveDirection) {
+    moveDragon(G, dragonMoveDirection);
+  } else {
+    createDragonPoo(G);
+  }
+
+  const events = ctx.events;
+  if (events) {
+    const endTurnFn = events.endTurn;
+    if (endTurnFn) {
+      endTurnFn();
+    }
   }
 }
 

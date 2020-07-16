@@ -1,6 +1,4 @@
-import {setupGame, findPlayerLocation, removeFromLocation, pickUpPoo} from "./dragon-poo";
-import {Poo} from "./poo";
-import {Location} from './location';
+import {setupGame, findPlayerLocation, pickUpPoo, movePiece} from "./dragon-poo";
 import { GameState } from "./GameState";
 
 it('player picks up no poo because there is no poo at their location', () => {
@@ -15,8 +13,8 @@ it('player picks up no poo because there is no poo at their location', () => {
 it('player picks up single poo at location', () => {
     const G = setupGame();
     movePlayerTo(G, "0", 2, 0);
-    G.pooTokens.push(new Poo(new Location(2, 0)));
-    G.pooTokens.push(new Poo(new Location(1, 0)));
+    G.cells[2][0].push("P");
+    G.cells[1][0].push("P");
 
     pickUpPoo(G, "0");
 
@@ -26,11 +24,11 @@ it('player picks up single poo at location', () => {
 it('player picks up all poo at location', () => {
     const G = setupGame();
     movePlayerTo(G, "0", 2, 0);
-    G.pooTokens.push(new Poo(new Location(2, 0)));
-    G.pooTokens.push(new Poo(new Location(2, 0)));
-    G.pooTokens.push(new Poo(new Location(2, 0)));
-    G.pooTokens.push(new Poo(new Location(2, 0)));
-    G.pooTokens.push(new Poo(new Location(1, 0)));
+    G.cells[2][0].push("P");
+    G.cells[2][0].push("P");
+    G.cells[2][0].push("P");
+    G.cells[2][0].push("P");
+    G.cells[1][0].push("P");
 
     pickUpPoo(G, "0");
 
@@ -38,11 +36,5 @@ it('player picks up all poo at location', () => {
 });
 
 function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {
-    const playerLocationBefore = findPlayerLocation(playerID, G.cells);
-    if (playerLocationBefore) {
-        G.cells[playerLocationBefore.row][playerLocationBefore.column] =
-        removeFromLocation(G.cells[playerLocationBefore.row][playerLocationBefore.column], playerID);
-    }
-
-    G.cells[row][column].push(playerID);
+    movePiece(G, playerID, findPlayerLocation(playerID, G.cells), {row: row, column: column});
 }

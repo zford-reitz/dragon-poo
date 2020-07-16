@@ -1,16 +1,19 @@
-import { setupGame, findPlayerLocation, DRAGON, removeFromLocation, unsafeMoveDragon, moveGoblin} from "./dragon-poo";
+import { setupGame, findPlayerLocation, DRAGON, unsafeMoveDragon, moveGoblin, movePiece} from "./dragon-poo";
 import { GameState } from "./GameState";
 import { Ctx } from "boardgame.io";
 import { INVALID_MOVE } from 'boardgame.io/core';
+import { EventsAPI } from "boardgame.io/dist/types/src/plugins/events/events";
 
 it('player moves one space up', () => {
     const G = setupGame();
     positionPlayerAt(G, "0", 2, 0);
+    const endTurnFn = jest.fn();
 
-    moveGoblin(G, {currentPlayer: "0"} as Ctx, 'up');
+    moveGoblin(G, {currentPlayer: "0", events: {endTurn: endTurnFn} as EventsAPI} as Ctx, 'up');
 
     expect(G.cells[2][0]).not.toContain("0");
     expect(G.cells[1][0]).toContain("0");
+    expect(endTurnFn.mock.calls.length).toBe(1);
 });
 
 it('player moves one space right', () => {
@@ -70,11 +73,5 @@ it('player cannot move into same space as dragon', () => {
 });
 
 function positionPlayerAt(G: GameState, playerID: string, row: number, column: number) {
-    const playerLocationBefore = findPlayerLocation(playerID, G.cells);
-    if (playerLocationBefore) {
-        G.cells[playerLocationBefore.row][playerLocationBefore.column] =
-        removeFromLocation(G.cells[playerLocationBefore.row][playerLocationBefore.column], playerID);
-    }
-
-    G.cells[row][column].push(playerID);
+    movePiece(G, playerID, findPlayerLocation(playerID, G.cells), {row: row, column: column});
 }

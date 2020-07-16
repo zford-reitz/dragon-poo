@@ -1,6 +1,6 @@
-import {moveDragon, setupGame, findPlayerLocation, DRAGON, removeFromLocation, unsafeMoveDragon, placeWall, createDragonPoo} from "./dragon-poo";
+import {moveDragon, setupGame, findPlayerLocation, DRAGON, unsafeMoveDragon, placeWall, createDragonPoo, findDragonLocation, movePiece} from "./dragon-poo";
 import { Location } from "./location";
-import {filter, isEqual} from "lodash";
+import * as _ from "lodash";
 import { GameState } from "./GameState";
 
 it('dragon moves one space left', () => {
@@ -25,7 +25,7 @@ it('dragon bounces off of edge of board', () => {
 it('dragon stays in initial location if wall is encountered', () => {
     const G = setupGame();
 
-    placeWall(G, new Location(2, 2), 'down');
+    placeWall(G, {row: 2, column: 2}, 'down');
     moveDragon(G, 'down');
 
     expect(G.cells[2][2]).toContain(DRAGON);
@@ -34,7 +34,7 @@ it('dragon stays in initial location if wall is encountered', () => {
 it('dragon eats wall if wall is encountered', () => {
     const G = setupGame();
 
-    placeWall(G, new Location(2, 2), 'down');
+    placeWall(G, {row: 2, column: 2}, 'down');
     moveDragon(G, 'down');
 
     expect(G.walls).toEqual([]);
@@ -45,7 +45,8 @@ it('dragon poos on command', () => {
 
     createDragonPoo(G);
 
-    expect(G.pooTokens[0].location).toEqual(new Location(2, 2));
+    const dragonLocation = findDragonLocation(G.cells)!;
+    expect(G.cells[dragonLocation.row][dragonLocation.column]).toContain("P");
 });
 
 // TODO zeb if player is on target tile, that player is moved to their starting zone and all of their poo is placed on that tile
@@ -53,22 +54,16 @@ it('dragon stomps on player, causing player to move back to starting zone and dr
     const G = setupGame();
     G.players["0"].poo = 3;
     movePlayerTo(G, "0", 3, 2);
-    const playerLocation = new Location(3, 2);
+    const playerLocation = {row: 3, column: 2};
     moveDragon(G, 'down');
 
     expect(G.cells[3][2]).toContain(DRAGON);
     expect(G.cells[3][2]).not.toContain("0");
     expect(findPlayerLocation("0", G.cells)).toBeFalsy();
-    expect(G.pooTokens.length).toBe(3);
-    expect(filter(G.pooTokens, (poo) => isEqual(poo.location, playerLocation)).length).toBe(3);
+    expect(_.flattenDeep(G.cells).filter(piece => piece === "P").length).toBe(3);
+    expect(_.filter(G.cells[playerLocation.row][playerLocation.column].filter(piece => piece === "P")).length).toBe(3);
 });
 
 function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {
-    const playerLocationBefore = findPlayerLocation(playerID, G.cells);
-    if (playerLocationBefore) {
-        G.cells[playerLocationBefore.row][playerLocationBefore.column] =
-        removeFromLocation(G.cells[playerLocationBefore.row][playerLocationBefore.column], playerID);
-    }
-
-    G.cells[row][column].push(playerID);
+    movePiece(G, playerID, findPlayerLocation(playerID, G.cells), {row: row, column: column});
 }

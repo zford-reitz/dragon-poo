@@ -1,6 +1,7 @@
-import {enterBoard, setupGame, unsafeMoveDragon} from "./dragon-poo";
+import {enterBoard, setupGame, unsafeMoveDragon, findPlayerLocation, removeFromLocation} from "./dragon-poo";
 import { INVALID_MOVE } from "boardgame.io/core";
 import { Ctx } from "boardgame.io";
+import { GameState } from "./GameState";
 
 it('left player enters in middle of left side', () => {
     const G = setupGame();
@@ -50,9 +51,21 @@ it('top player cannot enter at top of left side', () => {
 
 it('player cannot enter the board if that player is already on the board', () => {
     const G = setupGame();
-    enterBoard(G, {currentPlayer: "0"} as Ctx, 3, 0);
+    const endTurnFn = jest.fn();
+
+    positionPlayerAt(G, "0", 3, 0);
     const actualInvalidMove = enterBoard(G, {currentPlayer: "0"} as Ctx, 2, 0);
     
     expect(actualInvalidMove).toBe(INVALID_MOVE);
     expect(G.cells[2][0]).not.toContain("1");
+    expect(endTurnFn.mock.calls.length).toBe(0);
 });
+
+function positionPlayerAt(G: GameState, playerID: string, row: number, column: number) {
+    const playerLocationBefore = findPlayerLocation(playerID, G.cells);
+    if (playerLocationBefore) {
+        removeFromLocation(G, playerLocationBefore, playerID);
+    }
+
+    G.cells[row][column].push(playerID);
+}
