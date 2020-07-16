@@ -4,8 +4,9 @@ import { Wall } from './wall';
 import * as _ from 'lodash';
 import { Poo } from './poo';
 import { Ctx } from 'boardgame.io';
-import { GameState } from './GameState';
+import { GameState, DragonDieColor } from './GameState';
 
+const DRAGON_DIE_COLORS: DragonDieColor[] = ['orange', 'blue', 'green', 'white', 'brown', 'brown'];
 export const DRAGON = "Dragon";
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
@@ -58,7 +59,8 @@ export function setupGame() {
     },
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
-    pooTokens: []
+    pooTokens: [],
+    dragonDieRoll: 'brown'
   };
 
   game.cells[2][2].push(DRAGON);
@@ -209,6 +211,14 @@ export function pickUpPoo(G: GameState, playerID: string) {
   const playerLocation = findPlayerLocation(playerID, G.cells);
   if (playerLocation) {
     G.players[playerID].poo += _.remove(G.pooTokens, (poo: any) => _.isEqual((poo as Poo).location, playerLocation)).length;
+  }
+}
+
+export function rollDragonDie(G: GameState, ctx: Ctx) {
+  const rolledNumber = ctx.random?.D6();
+  
+  if (rolledNumber) {
+    G.dragonDieRoll = DRAGON_DIE_COLORS[rolledNumber - 1];
   }
 }
 

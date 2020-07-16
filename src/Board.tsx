@@ -29,16 +29,19 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
     const piecesOnBoard = this.props.G.cells.flat(Infinity);
 
     return (
-      <div className="grid">
-        <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' : '0'}</div>
-        <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' : '1'}</div>
-        <div className="center">
-          <table id="board">
-            <tbody>{tbody}</tbody>
-          </table>
+      <div>
+        <div className="grid">
+          <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' : '0'}</div>
+          <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' : '1'}</div>
+          <div className="center">
+            <table id="board">
+              <tbody>{tbody}</tbody>
+            </table>
+          </div>
+          <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : '2'}</div>
+          <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
         </div>
-        <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : '2'}</div>
-        <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
+        <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
       </div>
     );
   }
