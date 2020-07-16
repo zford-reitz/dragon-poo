@@ -169,23 +169,19 @@ function findPiece(grid: string[][][], piece: string): Location | undefined {
 }
 
 export function moveDragon(G: GameState, direction: Direction) {
-  const initialLocation: Location | undefined = findDragonLocation(G.cells);
+  const initialLocation = findDragonLocation(G.cells);
 
   if (initialLocation) {
-    const newLocation: Location = moveFrom(initialLocation, direction);
+    var newLocation = moveFrom(initialLocation, direction);
     const blockingWall = findBlockingWall(G, initialLocation, newLocation);
     if (blockingWall) {
-      // don't move. eat wall instead.
       _.remove(G.walls, blockingWall);
-    } else if (isLocationOnBoard(G, newLocation)) {
-      _.pull(getPiecesAt(G, initialLocation), DRAGON);
-      getPiecesAt(G, newLocation).push(DRAGON);
-    } else {
-      // go the other way instead
-      const bounceDirection = bounce(direction);
-      const bounceLocation = moveFrom(initialLocation, bounceDirection);
-      _.pull(getPiecesAt(G, initialLocation), DRAGON);
-      getPiecesAt(G, bounceLocation).push(DRAGON);
+    } else  {
+      if (!isLocationOnBoard(G, newLocation)) {
+        newLocation = moveFrom(initialLocation, bounce(direction));
+      } 
+
+      movePiece(G, DRAGON, initialLocation, newLocation);
     }
   }
 
