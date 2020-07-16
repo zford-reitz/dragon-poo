@@ -42,27 +42,31 @@
   grid-column: 2;
   background-color: blue;
   height: 20px;
+  border: 2px solid black;
 }
 
 .start-zone-1 {
   grid-row: 2;
   grid-column: 1;
-  background-color: green;
+  background-color: orange;
   width: 20px;
+  border: 2px solid black;
 }
 
 .start-zone-3 {
   grid-row: 2;
   grid-column: 3;
-  background-color: red;
+  background-color: green;
   width: 20px;
+  border: 2px solid black;
 }
 
 .start-zone-4 {
   grid-row: 3;
   grid-column: 2;
-  background-color: yellow;
+  background-color: white;
   height: 20px;
+  border: 2px solid black;
 }
 
 .center {
