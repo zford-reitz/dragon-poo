@@ -1,9 +1,8 @@
 import { Client } from "boardgame.io/react";
-import { setupGame, enterBoard, moveGoblin, rollDragonDie } from "./dragon-poo";
+import { setupGame, enterBoard, rollDragonDie, moveGoblin } from "./dragon-poo";
 import { DragonPooBoard } from "./Board";
 import { GameState } from "./GameState";
 import { Game, Ctx } from "boardgame.io";
-import * as _ from 'lodash';
 
 
 const DragonPoo: Game<GameState> = {
@@ -14,9 +13,11 @@ const DragonPoo: Game<GameState> = {
     rollDragonDie: rollDragonDie
   },
   endIf: (G: GameState, ctx: Ctx) => {
-    const winningPlayer = _.find(G.players, p => p.poo >= 5);
-    if (winningPlayer) {
-      return {winner: winningPlayer};
+    for (let playerID in G.players) {
+      let player = G.players[playerID];
+      if (player.poo >= 5) {
+        return {winner: playerID};
+      }
     }
   }
 

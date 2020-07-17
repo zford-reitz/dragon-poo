@@ -1,5 +1,4 @@
 import {moveDragon, setupGame, findPlayerLocation, DRAGON, unsafeMoveDragon, placeWall, createDragonPoo, findDragonLocation, movePiece} from "./dragon-poo";
-import { Location } from "./location";
 import * as _ from "lodash";
 import { GameState } from "./GameState";
 

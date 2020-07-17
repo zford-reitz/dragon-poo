@@ -2,8 +2,21 @@ import React from 'react';
 import { BoardProps } from 'boardgame.io';
 import './App.css';
 import { GameState } from './GameState';
+import { findPlayerLocation} from './dragon-poo';
 
 export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
+  
+  onClick(row: number, column: number) {
+
+    const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
+
+    if (playerLocation) {
+      this.props.moves.moveGoblin({row: row, column: column});
+    } else {
+      this.props.moves.enterBoard(row, column);
+    }
+  }
+
   render() {
     const cellStyle = {
       border: '1px solid #555',
@@ -18,7 +31,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
       for (let j = 0; j < 5; j++) {
         const id = 5 * i + j;
         cells.push(
-          <td style={cellStyle} key={id}>
+          <td style={cellStyle} key={id} onClick={() => this.onClick(i, j)}>
             {this.props.G.cells[i][j].join()}
           </td>
         );
@@ -27,6 +40,16 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
     }
 
     const piecesOnBoard = this.props.G.cells.flat(Infinity);
+
+    let winner = undefined;
+    if (this.props.ctx.gameover) {
+      winner =
+        this.props.ctx.gameover.winner !== undefined ? (
+          <div id="winner">Winner: {this.props.ctx.gameover.winner}</div>
+        ) : (
+          <div id="winner">Draw!</div>
+        );
+    }
 
     return (
       <div>
@@ -42,6 +65,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
           <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
         </div>
         <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
+        {winner}
       </div>
     );
   }

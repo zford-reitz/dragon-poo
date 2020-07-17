@@ -25,7 +25,7 @@ export const DRAGON = "Dragon";
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
-function moveFrom(startLocation: Location, direction: Direction): Location {
+export function moveFrom(startLocation: Location, direction: Direction): Location {
   switch (direction) {
     case 'up':
         return {row: startLocation.row - 1, column: startLocation.column};
@@ -105,8 +105,8 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
  * @param {*} G
  * @param {*} ctx
  */
-export function moveGoblin(G: GameState, ctx: Ctx, direction: Direction): undefined | typeof INVALID_MOVE {
-  const initialLocation: Location | undefined = findPlayerLocation(ctx.currentPlayer, G.cells);
+export function moveGoblinInDirection(G: GameState, ctx: Ctx, direction: Direction): undefined | typeof INVALID_MOVE {
+  const initialLocation = findPlayerLocation(ctx.currentPlayer, G.cells);
 
   if (!initialLocation) {
     return INVALID_MOVE;
@@ -121,6 +121,33 @@ export function moveGoblin(G: GameState, ctx: Ctx, direction: Direction): undefi
   getPiecesAt(G, newLocation).push(ctx.currentPlayer);
   
   endTurn(G, ctx);
+}
+
+export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undefined | typeof INVALID_MOVE {
+  const initialLocation = findPlayerLocation(ctx.currentPlayer, G.cells);
+
+  if (!initialLocation) {
+    return INVALID_MOVE;
+  }
+  
+  if (!isValidMoveLocation(G, newLocation)) {
+    return INVALID_MOVE;
+  }
+
+  if (!isOrthogonal(initialLocation, newLocation)) {
+    return INVALID_MOVE;
+  }  
+
+  movePiece(G, ctx.currentPlayer, initialLocation, newLocation);
+  
+  endTurn(G, ctx);
+}
+
+function isOrthogonal(a: Location, b: Location): boolean {
+  const rowDiff = Math.abs(a.row - b.row);
+  const columnDiff = Math.abs(a.column - b.column);
+
+  return (rowDiff === 0 && columnDiff === 1) || (rowDiff === 1 && columnDiff === 0);
 }
 
 export function removeFromLocation(G: GameState, location: Location, piece: string): void {
@@ -260,7 +287,7 @@ function endTurn(G: GameState, ctx: Ctx) {
 
 const game = {
   setup: setupGame,
-  moves: { moveGoblin, enterBoard },
+  moves: { moveGoblin: moveGoblinInDirection, enterBoard },
   turn: { moveLimit: 1 },
 };
 
