@@ -51,6 +51,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
         );
     }
 
+    let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand.map(c => c.title).join();
+
     return (
       <div>
         <div className="grid">
@@ -64,7 +66,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
           <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : '2'}</div>
           <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
         </div>
+        <div className="deck">Deck (cards remaining): {this.props.G.deck.length}</div>
         <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
+        <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>
         {winner}
       </div>
     );

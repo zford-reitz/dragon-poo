@@ -1,5 +1,6 @@
 import { Player } from "./Player";
 import { Wall } from "./wall";
+import { Card } from "./Card";
 
 interface PlayerMap {
     [key: string]: Player;
@@ -12,4 +13,5 @@ export interface GameState {
     cells: string[][][];
     walls: Wall[];
     dragonDieRoll: DragonDieColor;
+    deck: Card[];
 }

@@ -4,6 +4,8 @@ import { Wall } from './wall';
 import * as _ from 'lodash';
 import { Ctx } from 'boardgame.io';
 import { GameState, DragonDieColor } from './GameState';
+import { Card } from './Card';
+import { Player } from './Player';
 
 type ColorDirections = {
   orange: Direction;
@@ -54,27 +56,46 @@ function bounce(direction: Direction): Direction {
   return direction;
 }
 
-export function setupGame() {
+export function setupGame(ctx?: Ctx) {
   // TODO zeb can't assume 4 players
   // TODO zeb let players choose color at start of game, rather than making it a part of setup
 
+  const playerOrange: Player = {
+    entranceRows: [1, 2, 3],
+    entranceColumns: [0],
+    poo: 0,
+    hand: []
+  };
+  const playerBlue: Player = {
+    entranceRows: [0],
+    entranceColumns: [1, 2, 3],
+    poo: 0,
+    hand: []
+  };
+
   const game: GameState = {
     players: {
-      "0": {
-        entranceRows: [1, 2, 3],
-        entranceColumns: [0],
-        poo: 0
-      },
-      "1": {
-        entranceRows: [0],
-        entranceColumns: [1, 2, 3],
-        poo: 0
-      }
+      "0": playerOrange,
+      "1": playerBlue
     },
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
-    dragonDieRoll: 'brown'
+    dragonDieRoll: 'brown',
+    deck: []
   };
+
+  game.deck.push(...Array<Card>(5).fill({title: 'Bait', text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.'}));
+  game.deck.push(...Array<Card>(6).fill({title: 'Walls', text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.'}));
+  game.deck.push(...Array<Card>(4).fill({title: 'Catapult', text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.'}));
+  game.deck.push(...Array<Card>(4).fill({title: 'Big Hammer', text: 'Play this card to destroy any Poo, Wall, or Catapult on the Table'}));
+  game.deck.push({title: 'Hidey Hole', text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.'});
+  
+  if (ctx && ctx.random) {
+    game.deck = ctx.random.Shuffle(game.deck);
+  }
+
+  playerOrange.hand.push(..._.pullAt(game.deck, 0, 1, 2));
+  playerBlue.hand.push(..._.pullAt(game.deck, 0, 1, 2));
 
   game.cells[2][2].push(DRAGON);
 
