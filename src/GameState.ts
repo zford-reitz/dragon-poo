@@ -14,4 +14,5 @@ export interface GameState {
     walls: Wall[];
     dragonDieRoll: DragonDieColor;
     deck: Card[];
+    discardPile: Card[];
 }

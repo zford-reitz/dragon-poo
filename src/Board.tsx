@@ -3,9 +3,14 @@ import { BoardProps } from 'boardgame.io';
 import './App.css';
 import { GameState } from './GameState';
 import { findPlayerLocation} from './dragon-poo';
+import { Card } from './Card';
 
 export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
-  
+
+  onCardClick(clicked: Card) {
+    this.props.moves.playCard(clicked);
+  }
+
   onClick(row: number, column: number) {
 
     const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
@@ -51,7 +56,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
         );
     }
 
-    let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand.map(c => c.title).join();
+    let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand
+      .map(card => <button type="button" onClick={() => this.onCardClick(card)}>{card.title}</button>);
 
     return (
       <div>

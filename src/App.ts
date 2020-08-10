@@ -1,5 +1,5 @@
 import { Client } from "boardgame.io/react";
-import { setupGame, enterBoard, rollDragonDie, moveGoblin } from "./dragon-poo";
+import { setupGame, enterBoard, moveGoblin, playCard, endTurn } from "./dragon-poo";
 import { DragonPooBoard } from "./Board";
 import { GameState } from "./GameState";
 import { Game, Ctx } from "boardgame.io";
@@ -7,10 +7,19 @@ import { Game, Ctx } from "boardgame.io";
 
 const DragonPoo: Game<GameState> = {
   setup: setupGame,
-  moves: {
-    moveGoblin: moveGoblin,
-    enterBoard: enterBoard,
-    rollDragonDie: rollDragonDie
+  turn: {
+    activePlayers: {
+      currentPlayer: 'move'
+    },
+    stages: {
+      move: {
+        moves: {moveGoblin, enterBoard, endTurn},
+        next: 'playCard'
+      },
+      playCard: {
+        moves: {playCard, endTurn}
+      }
+    }
   },
   endIf: (G: GameState, ctx: Ctx) => {
     for (let playerID in G.players) {

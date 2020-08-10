@@ -81,17 +81,33 @@ export function setupGame(ctx?: Ctx) {
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
     dragonDieRoll: 'brown',
-    deck: []
+    deck: [],
+    discardPile: []
   };
 
-  game.deck.push(...Array<Card>(5).fill({title: 'Bait', text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.'}));
-  game.deck.push(...Array<Card>(6).fill({title: 'Walls', text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.'}));
-  game.deck.push(...Array<Card>(4).fill({title: 'Catapult', text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.'}));
-  game.deck.push(...Array<Card>(4).fill({title: 'Big Hammer', text: 'Play this card to destroy any Poo, Wall, or Catapult on the Table'}));
-  game.deck.push({title: 'Hidey Hole', text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.'});
+  game.deck.push(...Array<Card>(5).fill({
+    title: 'Bait', 
+    text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.',
+    play: (G) => {}}));
+  game.deck.push(...Array<Card>(6).fill({
+    title: 'Walls', 
+    text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
+    play: (G) => {}}));
+  game.deck.push(...Array<Card>(4).fill({
+    title: 'Catapult', 
+    text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.',
+    play: (G) => {}}));
+  game.deck.push(...Array<Card>(4).fill({
+    title: 'Big Hammer', 
+    text: 'Play this card to destroy any Poo, Wall, or Catapult on the Table',
+    play: (G) => {}}));
+  game.deck.push({
+    title: 'Hidey Hole', 
+    text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.',
+    play: (G) => {}});
   
-  if (ctx && ctx.random) {
-    game.deck = ctx.random.Shuffle(game.deck);
+  if (ctx) {
+    game.deck = ctx.random!.Shuffle(game.deck);
   }
 
   playerOrange.hand.push(..._.pullAt(game.deck, 0, 1, 2));
@@ -100,6 +116,15 @@ export function setupGame(ctx?: Ctx) {
   game.cells[2][2].push(DRAGON);
 
   return game;
+}
+
+function drawCard(G: GameState, ctx: Ctx, drawingPlayer: Player) {
+  if (G.deck.length === 0) {
+    G.deck = ctx.random!.Shuffle(G.discardPile);
+    G.discardPile = [];
+  }
+
+  drawingPlayer.hand.push(..._.pullAt(G.deck, 0));
 }
 
 export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) {
@@ -114,7 +139,8 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
     isValidMoveLocation(G, {row: row, column: column})
   ) {
     G.cells[row][column].push(ctx.currentPlayer);
-    endTurn(G, ctx);
+    
+    ctx.events!.endStage!();
   } else {
       return INVALID_MOVE;
   }
@@ -141,7 +167,7 @@ export function moveGoblinInDirection(G: GameState, ctx: Ctx, direction: Directi
   _.remove(getPiecesAt(G, initialLocation), ctx.currentPlayer);
   getPiecesAt(G, newLocation).push(ctx.currentPlayer);
   
-  endTurn(G, ctx);
+  ctx.events!.endStage!();
 }
 
 export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undefined | typeof INVALID_MOVE {
@@ -161,6 +187,16 @@ export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undef
 
   movePiece(G, ctx.currentPlayer, initialLocation, newLocation);
   
+  ctx.events!.endStage!();
+}
+
+export function playCard(G: GameState, ctx: Ctx, toPlay: Card) {
+  const player = G.players[ctx.currentPlayer];
+
+  toPlay.play(G);
+  player.hand.splice(_.findIndex(player.hand, {title: toPlay.title}), 1);
+  G.discardPile.push(toPlay);
+  drawCard(G, ctx, player);
   endTurn(G, ctx);
 }
 
@@ -286,7 +322,7 @@ function getPiecesAt(G: GameState, location: Location) {
   return G.cells[location.row][location.column];
 }
 
-function endTurn(G: GameState, ctx: Ctx) {
+export function endTurn(G: GameState, ctx: Ctx) {
   pickUpPoo(G, ctx.currentPlayer);
   rollDragonDie(G, ctx);
 
@@ -297,24 +333,5 @@ function endTurn(G: GameState, ctx: Ctx) {
     createDragonPoo(G);
   }
 
-  const events = ctx.events;
-  if (events) {
-    const endTurnFn = events.endTurn;
-    if (endTurnFn) {
-      endTurnFn();
-    }
-  }
+  ctx.events!.endTurn!();
 }
-
-const game = {
-  setup: setupGame,
-  moves: { moveGoblin: moveGoblinInDirection, enterBoard },
-  turn: { moveLimit: 1 },
-};
-
-export default {
-  game,
-  debug: false,
-  numPlayers: 2,
-  multiplayer: { local: true },
-};
