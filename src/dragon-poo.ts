@@ -146,30 +146,6 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
   }
 }
 
-/**
- * Moves a player's piece orthoganally on the board.
- *
- * @param {*} G
- * @param {*} ctx
- */
-export function moveGoblinInDirection(G: GameState, ctx: Ctx, direction: Direction): undefined | typeof INVALID_MOVE {
-  const initialLocation = findPlayerLocation(ctx.currentPlayer, G.cells);
-
-  if (!initialLocation) {
-    return INVALID_MOVE;
-  }
-
-  const newLocation: Location = moveFrom(initialLocation, direction);
-  if (!isValidMoveLocation(G, newLocation)) {
-    return INVALID_MOVE;
-  }
-
-  _.remove(getPiecesAt(G, initialLocation), ctx.currentPlayer);
-  getPiecesAt(G, newLocation).push(ctx.currentPlayer);
-  
-  ctx.events!.endStage!();
-}
-
 export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undefined | typeof INVALID_MOVE {
   const initialLocation = findPlayerLocation(ctx.currentPlayer, G.cells);
 

@@ -57,7 +57,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>> {
     }
 
     let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand
-      .map(card => <button type="button" onClick={() => this.onCardClick(card)}>{card.title}</button>);
+      .map((card, idx) => <button key={idx} type="button" onClick={() => this.onCardClick(card)}>{card.title}</button>);
 
     return (
       <div>
