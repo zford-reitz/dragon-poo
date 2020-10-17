@@ -162,6 +162,10 @@ export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undef
     return INVALID_MOVE;
   }  
 
+  if (findBlockingWall(G, initialLocation, newLocation)) {
+    return INVALID_MOVE;
+  }
+
   movePiece(G, ctx.currentPlayer, initialLocation, newLocation);
   
   ctx.events!.endStage!();

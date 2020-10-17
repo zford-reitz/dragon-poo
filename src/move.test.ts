@@ -3,6 +3,7 @@ import { GameState } from "./GameState";
 import { Ctx } from "boardgame.io";
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { EventsAPI } from "boardgame.io/dist/types/src/plugins/events/events";
+import { Wall } from "./wall";
 
 it('player moves one space up', () => {
     const G = setupGame();
@@ -70,6 +71,18 @@ it('player cannot move into same space as dragon', () => {
     expect(G.cells[2][0]).toContain("0");
     expect(G.cells[2][1]).not.toContain("0");
     expect(G.cells[2][1]).toContain(DRAGON);
+});
+
+it('player cannot move through a wall', () => {
+    const G = setupGame();
+    positionPlayerAt(G, "0", 2, 0);
+    G.walls.push(new Wall({row: 2, column: 0}, {row: 2, column: 1}));
+
+    const moveThroughWall = moveGoblin(G, createCtx("0"), {row: 2, column: 1});
+
+    expect(moveThroughWall).toBe(INVALID_MOVE);
+    expect(G.cells[2][0]).toContain("0");
+    expect(G.cells[2][1]).not.toContain("0");
 });
 
 function createCtx(currentPlayer: string): Ctx {
