@@ -4,5 +4,5 @@ export interface Card {
     title: string;
     text: string;
 
-    play(G: GameState): void;
+    play(G: GameState, cardContext?: any): void;
 }

@@ -14,5 +14,9 @@ export class Wall {
         return (isEqual(initialLocation, this.from) && isEqual(newLocation, this.to)) 
             || (isEqual(initialLocation, this.to) && isEqual(newLocation, this.from));
     }
-      
+
+    isTouching(location: Location) {
+        return isEqual(location, this.from) || isEqual(location, this.to);
+    }
+
 }

@@ -92,7 +92,8 @@ export function setupGame(ctx?: Ctx) {
   game.deck.push(...Array<Card>(6).fill({
     title: 'Walls', 
     text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
-    play: (G) => {}}));
+    play: (G, cardContext) => {G.walls.push(new Wall(cardContext.from, cardContext.to))}
+  }));
   game.deck.push(...Array<Card>(4).fill({
     title: 'Catapult', 
     text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.',
@@ -166,17 +167,18 @@ export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undef
   ctx.events!.endStage!();
 }
 
-export function playCard(G: GameState, ctx: Ctx, toPlay: Card) {
+export function playCard(G: GameState, ctx: Ctx, toPlay: Card, cardContext?: any) {
   const player = G.players[ctx.currentPlayer];
 
-  toPlay.play(G);
+  toPlay.play(G, cardContext);
+
   player.hand.splice(_.findIndex(player.hand, {title: toPlay.title}), 1);
   G.discardPile.push(toPlay);
   drawCard(G, ctx, player);
   endTurn(G, ctx);
 }
 
-function isOrthogonal(a: Location, b: Location): boolean {
+export function isOrthogonal(a: Location, b: Location): boolean {
   const rowDiff = Math.abs(a.row - b.row);
   const columnDiff = Math.abs(a.column - b.column);
 
@@ -259,7 +261,7 @@ export function moveDragon(G: GameState, direction: Direction) {
   }
 }
 
-function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
+export function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
   return _.find(G.walls, wall => wall.isBetween(initialLocation, newLocation));
 }
 
