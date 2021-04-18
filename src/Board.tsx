@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { BoardProps } from 'boardgame.io/react';
 import './App.css';
 import { GameState } from './GameState';
-import { findPlayerLocation, isOrthogonal, findBlockingWall, isTouching } from './dragon-poo';
+import { findPlayerLocation, isOrthogonal, findBlockingWall, isTouching, canMoveGoblin } from './dragon-poo';
 import { Card } from './Card';
 import { Location } from './location';
 import _ from 'lodash';
@@ -82,6 +82,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
       lineHeight: '50px',
     };
 
+    const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
+    const isMoving = this.props.ctx.activePlayers![this.props.ctx.currentPlayer] === 'move';
+
     let tbody = [];
     for (let i = 0; i < 5; i++) {
       let cells: JSX.Element[] = [];
@@ -90,6 +93,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         const thisCellStyle = _.cloneDeep(cellStyle);
         if (!_.isEmpty(wallsAtLocation)) {
           thisCellStyle.border = '3px solid #555';
+        }
+        if (isMoving && canMoveGoblin(this.props.G, playerLocation, {row: i, column: j})) {
+          thisCellStyle.backgroundColor = 'pink';
         }
         const id = 5 * i + j;
         cells.push(

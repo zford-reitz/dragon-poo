@@ -146,26 +146,21 @@ export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) 
   }
 }
 
-export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undefined | typeof INVALID_MOVE {
+export function canMoveGoblin(G: GameState, initialLocation: Location | undefined, targetLocation: Location): boolean {
+  return initialLocation !== undefined
+    && isValidMoveLocation(G, targetLocation)
+    && isOrthogonal(initialLocation, targetLocation)
+    && !findBlockingWall(G, initialLocation, targetLocation);
+}
+
+export function moveGoblin(G: GameState, ctx: Ctx, targetLocation: Location): undefined | typeof INVALID_MOVE {
   const initialLocation = findPlayerLocation(ctx.currentPlayer, G.cells);
 
-  if (!initialLocation) {
+  if (!canMoveGoblin(G, initialLocation, targetLocation)) {
     return INVALID_MOVE;
   }
   
-  if (!isValidMoveLocation(G, newLocation)) {
-    return INVALID_MOVE;
-  }
-
-  if (!isOrthogonal(initialLocation, newLocation)) {
-    return INVALID_MOVE;
-  }  
-
-  if (findBlockingWall(G, initialLocation, newLocation)) {
-    return INVALID_MOVE;
-  }
-
-  movePiece(G, ctx.currentPlayer, initialLocation, newLocation);
+  movePiece(G, ctx.currentPlayer, initialLocation, targetLocation);
   
   ctx.events!.endStage!();
 }
