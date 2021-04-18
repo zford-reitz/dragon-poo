@@ -76,7 +76,7 @@ it('player cannot move into same space as dragon', () => {
 it('player cannot move through a wall', () => {
     const G = setupGame();
     positionPlayerAt(G, "0", 2, 0);
-    G.walls.push(new Wall({row: 2, column: 0}, {row: 2, column: 1}));
+    G.walls.push({from: {row: 2, column: 0}, to: {row: 2, column: 1}});
 
     const moveThroughWall = moveGoblin(G, createCtx("0"), {row: 2, column: 1});
 

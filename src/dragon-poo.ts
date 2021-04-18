@@ -88,24 +88,23 @@ export function setupGame(ctx?: Ctx) {
   game.deck.push(...Array<Card>(5).fill({
     title: 'Bait', 
     text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.',
-    play: (G) => {}}));
+  }));
   game.deck.push(...Array<Card>(6).fill({
     title: 'Walls', 
     text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
-    play: (G, cardContext) => {G.walls.push(new Wall(cardContext.from, cardContext.to))}
   }));
   game.deck.push(...Array<Card>(4).fill({
     title: 'Catapult', 
     text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.',
-    play: (G) => {}}));
+  }));
   game.deck.push(...Array<Card>(4).fill({
     title: 'Big Hammer', 
     text: 'Play this card to destroy any Poo, Wall, or Catapult on the Table',
-    play: (G) => {}}));
+  }));
   game.deck.push({
     title: 'Hidey Hole', 
     text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.',
-    play: (G) => {}});
+  });
   
   if (ctx) {
     game.deck = ctx.random!.Shuffle(game.deck);
@@ -174,12 +173,38 @@ export function moveGoblin(G: GameState, ctx: Ctx, newLocation: Location): undef
 export function playCard(G: GameState, ctx: Ctx, toPlay: Card, cardContext?: any) {
   const player = G.players[ctx.currentPlayer];
 
-  toPlay.play(G, cardContext);
+  const indexOfCardInHand = _.findIndex(player.hand, {title: toPlay.title});
+  if (indexOfCardInHand === -1) {
+    return INVALID_MOVE;
+  }
 
-  player.hand.splice(_.findIndex(player.hand, {title: toPlay.title}), 1);
+  const cardEffectResult = performCardEffect(G, toPlay, cardContext);
+  if (cardEffectResult === INVALID_MOVE) {
+    return INVALID_MOVE;
+  }
+
+  player.hand.splice(indexOfCardInHand, 1);
   G.discardPile.push(toPlay);
   drawCard(G, ctx, player);
   endTurn(G, ctx);
+}
+
+export function performCardEffect(G: GameState, played: Card, cardContext?: any) {
+  switch (played.title) {
+    case 'Bait':
+      break;
+    case 'Walls':
+      G.walls.push({from: cardContext.from, to: cardContext.to});
+      break;
+    case 'Catapult':
+      break;
+    case 'Big Hammer':
+      break;
+    case 'Hidey Hole':
+      break;
+    default:
+      return INVALID_MOVE;
+  }
 }
 
 export function isOrthogonal(a: Location, b: Location): boolean {
@@ -266,7 +291,7 @@ export function moveDragon(G: GameState, direction: Direction) {
 }
 
 export function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
-  return _.find(G.walls, wall => wall.isBetween(initialLocation, newLocation));
+  return _.find(G.walls, wall => isBetween(wall, initialLocation, newLocation));
 }
 
 
@@ -275,7 +300,7 @@ export function unsafeMoveDragon(G: GameState, row: number, column: number) {
 }
 
 export function placeWall(G: GameState, location: Location, direction: Direction) {
-  G.walls.push(new Wall(location, moveFrom(location, direction)));
+  G.walls.push({from: location, to: moveFrom(location, direction)});
 }
 
 export function createDragonPoo(G: GameState) {
@@ -316,4 +341,13 @@ export function endTurn(G: GameState, ctx: Ctx) {
   }
 
   ctx.events!.endTurn!();
+}
+
+export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location) {
+  return (_.isEqual(initialLocation, wall.from) && _.isEqual(newLocation, wall.to)) 
+      || (_.isEqual(initialLocation, wall.to) && _.isEqual(newLocation, wall.from));
+}
+
+export function isTouching(wall: Wall, location: Location) {
+  return _.isEqual(location, wall.from) || _.isEqual(location, wall.to);
 }

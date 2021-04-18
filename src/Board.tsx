@@ -1,8 +1,8 @@
 import React, { CSSProperties } from 'react';
-import { BoardProps } from 'boardgame.io';
+import { BoardProps } from 'boardgame.io/react';
 import './App.css';
 import { GameState } from './GameState';
-import { findPlayerLocation, isOrthogonal, findBlockingWall } from './dragon-poo';
+import { findPlayerLocation, isOrthogonal, findBlockingWall, isTouching } from './dragon-poo';
 import { Card } from './Card';
 import { Location } from './location';
 import _ from 'lodash';
@@ -71,7 +71,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
   }
 
   findAllWallsAt(location: Location): Wall[] {
-    return _.filter(this.props.G.walls, w => w.isTouching(location));
+    return _.filter(this.props.G.walls, w => isTouching(w, location));
   }
 
   render() {
