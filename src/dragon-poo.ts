@@ -338,11 +338,7 @@ export function endTurn(G: GameState, ctx: Ctx) {
   ctx.events!.endTurn!();
 }
 
-export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location) {
+export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {
   return (_.isEqual(initialLocation, wall.from) && _.isEqual(newLocation, wall.to)) 
       || (_.isEqual(initialLocation, wall.to) && _.isEqual(newLocation, wall.from));
-}
-
-export function isTouching(wall: Wall, location: Location) {
-  return _.isEqual(location, wall.from) || _.isEqual(location, wall.to);
 }

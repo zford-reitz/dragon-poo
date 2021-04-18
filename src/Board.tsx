@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { BoardProps } from 'boardgame.io/react';
 import './App.css';
 import { GameState } from './GameState';
-import { findPlayerLocation, isOrthogonal, findBlockingWall, isTouching, canMoveGoblin, canEnterBoard } from './dragon-poo';
+import { findPlayerLocation, isOrthogonal, findBlockingWall, canMoveGoblin, canEnterBoard } from './dragon-poo';
 import { Card } from './Card';
 import { Location } from './location';
 import _ from 'lodash';
@@ -70,33 +70,55 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     }
   }
 
-  findAllWallsAt(location: Location): Wall[] {
-    return _.filter(this.props.G.walls, w => isTouching(w, location));
+  applyWallStyles(location: Location, css: CSSProperties) {
+    const wallStyle = '3px solid #555';
+    for (let wall of this.props.G.walls) {
+      let walledOff: Location | undefined = undefined;
+      if (_.isEqual(location, wall.from)) {
+        walledOff = wall.to;
+      } else if (_.isEqual(location, wall.to)) {
+        walledOff = wall.from;
+      }
+
+      if (walledOff) {
+        if (location.row < walledOff.row) {
+          css.borderBottom = wallStyle;
+        } else if (walledOff.row < location.row) {
+          css.borderTop = wallStyle;
+        } else if (location.column < walledOff.column) {
+          css.borderRight = wallStyle;
+        } else if (walledOff.column < location.column) {
+          css.borderLeft = wallStyle;
+        }
+      }
+    }
   }
 
   render() {
     const cellStyle: CSSProperties = {
-      border: '1px solid #555',
+      borderTop: '1px solid #555',
+      borderBottom: '1px solid #555',
+      borderLeft: '1px solid #555',
+      borderRight: '1px solid #555',
       width: '50px',
       height: '50px',
       lineHeight: '50px',
     };
 
     const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-    const isMoving = this.props.ctx.activePlayers![this.props.ctx.currentPlayer] === 'move';
+    const isMoving = this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move';
 
     let tbody = [];
     for (let i = 0; i < 5; i++) {
       let cells: JSX.Element[] = [];
       for (let j = 0; j < 5; j++) {
-        const wallsAtLocation = this.findAllWallsAt({row: i, column: j});
         const thisCellStyle = _.cloneDeep(cellStyle);
-        if (!_.isEmpty(wallsAtLocation)) {
-          thisCellStyle.border = '3px solid #555';
-        }
+        this.applyWallStyles({row: i, column: j}, thisCellStyle);
+
         if (isMoving && (canMoveGoblin(this.props.G, playerLocation, {row: i, column: j}) || canEnterBoard(this.props.G, this.props.ctx, i, j))) {
           thisCellStyle.backgroundColor = 'pink';
         }
+
         const id = 5 * i + j;
         cells.push(
           <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
