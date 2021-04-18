@@ -127,17 +127,17 @@ function drawCard(G: GameState, ctx: Ctx, drawingPlayer: Player) {
   drawingPlayer.hand.push(..._.pullAt(G.deck, 0));
 }
 
-export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) {
-  if (findPlayerLocation(ctx.currentPlayer, G.cells)) {
-    return INVALID_MOVE;
-  }
-  
-  let player = G.players[ctx.currentPlayer];
-  if (
+export function canEnterBoard(G: GameState, ctx: Ctx, row: number, column: number): boolean {
+  const player = G.players[ctx.currentPlayer];
+    
+  return !findPlayerLocation(ctx.currentPlayer, G.cells) &&
     player.entranceRows.includes(row) &&
     player.entranceColumns.includes(column) &&
-    isValidMoveLocation(G, {row: row, column: column})
-  ) {
+    isValidMoveLocation(G, {row: row, column: column});
+}
+
+export function enterBoard(G: GameState, ctx: Ctx, row: number, column: number) {
+  if (canEnterBoard(G, ctx, row, column)) {
     G.cells[row][column].push(ctx.currentPlayer);
     
     ctx.events!.endStage!();
