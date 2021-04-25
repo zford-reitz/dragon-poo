@@ -6,7 +6,6 @@ import { findPlayerLocation, isOrthogonal, findBlockingWall, canMoveGoblin, canE
 import { Card } from './Card';
 import { Location } from './location';
 import _ from 'lodash';
-import { Wall } from './wall';
 
 interface ClientState {
   action?: string;
@@ -106,7 +105,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     };
 
     const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-    const isMoving = this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move';
+    const isMoving = this.props.isActive && (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move' || this.props.G.deck.length === 0);
 
     let tbody = [];
     for (let i = 0; i < 5; i++) {
@@ -131,7 +130,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
 
     const piecesOnBoard = this.props.G.cells.flat(Infinity);
 
-    let winner = undefined;
+    let winner: any = undefined;
     if (this.props.ctx.gameover) {
       winner =
         this.props.ctx.gameover.winner !== undefined ? (
@@ -162,7 +161,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
           <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : '2'}</div>
           <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
         </div>
-        <div className="deck">Deck (cards remaining): {this.props.G.deck.length}</div>
+        <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>
         <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
         <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>
         {cancelButton}

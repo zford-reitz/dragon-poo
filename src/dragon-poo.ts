@@ -56,16 +56,46 @@ function bounce(direction: Direction): Direction {
   return direction;
 }
 
-export function setupGame(ctx?: Ctx) {
-  // TODO zeb can't assume 4 players
-  // TODO zeb let players choose color at start of game, rather than making it a part of setup
-
+export function setupKidGame(ctx?: Ctx) {
   const playerOrange: Player = {
     entranceRows: [1, 2, 3],
     entranceColumns: [0],
     poo: 0,
     hand: []
   };
+  
+  const playerBlue: Player = {
+    entranceRows: [0],
+    entranceColumns: [1, 2, 3],
+    poo: 0,
+    hand: []
+  };
+
+  const game: GameState = {
+    players: {
+      "0": playerOrange,
+      "1": playerBlue
+    },
+    cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
+    walls: [],
+    dragonDieRoll: 'brown',
+    deck: [],
+    discardPile: []
+  };
+
+  game.cells[2][2].push(DRAGON);
+
+  return game;
+}
+
+export function setupGame(ctx?: Ctx) {
+  const playerOrange: Player = {
+    entranceRows: [1, 2, 3],
+    entranceColumns: [0],
+    poo: 0,
+    hand: []
+  };
+  
   const playerBlue: Player = {
     entranceRows: [0],
     entranceColumns: [1, 2, 3],
@@ -325,6 +355,10 @@ function getPiecesAt(G: GameState, location: Location) {
 }
 
 export function endTurn(G: GameState, ctx: Ctx) {
+  ctx.events!.endTurn!();
+}
+
+export function onEndTurn(G: GameState, ctx: Ctx) {
   pickUpPoo(G, ctx.currentPlayer);
   rollDragonDie(G, ctx);
 
@@ -334,8 +368,6 @@ export function endTurn(G: GameState, ctx: Ctx) {
   } else {
     createDragonPoo(G);
   }
-
-  ctx.events!.endTurn!();
 }
 
 export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {
