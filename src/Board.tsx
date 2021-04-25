@@ -128,6 +128,13 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
       tbody.push(<tr key={i}>{cells}</tr>);
     }
 
+    let pooCounts = [];
+    for (let playerId in this.props.G.players) {
+      pooCounts.push(
+        <div>Player {playerId} poo: {this.props.G.players[playerId].poo}</div>
+      );
+    }
+
     const piecesOnBoard = this.props.G.cells.flat(Infinity);
 
     let winner: any = undefined;
@@ -164,6 +171,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>
         <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
         <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>
+        {pooCounts}
         {cancelButton}
         {winner}
       </div>
