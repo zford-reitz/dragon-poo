@@ -2,7 +2,7 @@ import { Player } from "./Player";
 import { Wall } from "./wall";
 import { Card } from "./Card";
 
-interface PlayerMap {
+export interface PlayerMap {
     [key: string]: Player;
 }
 

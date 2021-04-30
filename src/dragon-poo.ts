@@ -3,7 +3,7 @@ import { Location } from './location';
 import { Wall } from './wall';
 import * as _ from 'lodash';
 import { Ctx } from 'boardgame.io';
-import { GameState, DragonDieColor } from './GameState';
+import { GameState, DragonDieColor, PlayerMap } from './GameState';
 import { Card } from './Card';
 import { Player } from './Player';
 
@@ -56,7 +56,7 @@ function bounce(direction: Direction): Direction {
   return direction;
 }
 
-export function setupKidGame(ctx?: Ctx) {
+function setupPlayers(ctx: Ctx): PlayerMap {
   const playerOrange: Player = {
     entranceRows: [1, 2, 3],
     entranceColumns: [0],
@@ -71,11 +71,37 @@ export function setupKidGame(ctx?: Ctx) {
     hand: []
   };
 
+  let players: PlayerMap = {
+    "0": playerOrange,
+    "1": playerBlue
+  }
+
+  if (ctx.numPlayers > 2) {
+    const playerGreen: Player = {
+      entranceRows: [1, 2, 3],
+      entranceColumns: [4],
+      poo: 0,
+      hand: []
+    };
+      players["2"] = playerGreen;
+  }
+
+  if (ctx.numPlayers > 3) {
+    const playerWhite: Player = {
+      entranceRows: [4],
+      entranceColumns: [1, 2, 3],
+      poo: 0,
+      hand: []
+    };
+      players["3"] = playerWhite;
+  }
+
+  return players;
+}
+
+export function setupKidGame(ctx?: Ctx) {
   const game: GameState = {
-    players: {
-      "0": playerOrange,
-      "1": playerBlue
-    },
+    players: setupPlayers(ctx!),
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
     dragonDieRoll: 'brown',
@@ -89,25 +115,8 @@ export function setupKidGame(ctx?: Ctx) {
 }
 
 export function setupGame(ctx?: Ctx) {
-  const playerOrange: Player = {
-    entranceRows: [1, 2, 3],
-    entranceColumns: [0],
-    poo: 0,
-    hand: []
-  };
-  
-  const playerBlue: Player = {
-    entranceRows: [0],
-    entranceColumns: [1, 2, 3],
-    poo: 0,
-    hand: []
-  };
-
   const game: GameState = {
-    players: {
-      "0": playerOrange,
-      "1": playerBlue
-    },
+    players: setupPlayers(ctx!),
     cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
     walls: [],
     dragonDieRoll: 'brown',
@@ -140,8 +149,9 @@ export function setupGame(ctx?: Ctx) {
     game.deck = ctx.random!.Shuffle(game.deck);
   }
 
-  playerOrange.hand.push(..._.pullAt(game.deck, 0, 1, 2));
-  playerBlue.hand.push(..._.pullAt(game.deck, 0, 1, 2));
+  for (let playerId in game.players) {
+    game.players[playerId].hand.push(..._.pullAt(game.deck, 0, 1, 2));
+  }
 
   game.cells[2][2].push(DRAGON);
 
