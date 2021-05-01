@@ -119,9 +119,14 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         }
 
         const id = 5 * i + j;
+        let cellContents = [];
+        if (this.props.G.cells[i][j].includes('Dragon')) {
+          cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
+        }
         cells.push(
           <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
-            {this.props.G.cells[i][j].join()}
+            {cellContents}
+            {_.without(this.props.G.cells[i][j], 'Dragon').join()}
           </td>
         );
       }
@@ -174,6 +179,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         {pooCounts}
         {cancelButton}
         {winner}
+        Dragon Icon by Di (they-them) - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=99403224
       </div>
     );
   }
