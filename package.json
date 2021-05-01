@@ -24,6 +24,7 @@
     "start": "node -r esm build/server.js",
     "build": "react-scripts build && tsc --project tsconfig-server.json",
     "test": "react-scripts test",
+    "dev": "react-scripts start",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
