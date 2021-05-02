@@ -102,6 +102,16 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
       width: '50px',
       height: '50px',
       lineHeight: '50px',
+      position: 'relative'
+    };
+
+    const dragonStyle: CSSProperties = {
+      position: 'absolute',
+      top: '5px'
+    };
+
+    const pooStyle: CSSProperties = {
+      position: 'absolute',
     };
 
     const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
@@ -121,12 +131,17 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         const id = 5 * i + j;
         let cellContents = [];
         if (this.props.G.cells[i][j].includes('Dragon')) {
-          cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
+          cellContents.push(<img src="icons/dragon.svg" width="50px" style={dragonStyle}></img>);
         }
+
+        for (let p of _.filter(this.props.G.cells[i][j], e => e === 'P')) {
+          cellContents.push(<img src="icons/poo.svg" width="20px" style={pooStyle}></img>);
+        }
+
         cells.push(
           <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
             {cellContents}
-            {_.without(this.props.G.cells[i][j], 'Dragon').join()}
+            <span>{_(this.props.G.cells[i][j]).without('Dragon').without('P').join()}</span>
           </td>
         );
       }
@@ -179,7 +194,10 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         {pooCounts}
         {cancelButton}
         {winner}
-        Dragon Icon by Di (they-them) - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=99403224
+        <br/>
+        <br/>
+        Dragon Icon by Di (they-them) - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=99403224<br/>
+        Poo Icon by OpenMoji, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=69428124<br/>
       </div>
     );
   }
