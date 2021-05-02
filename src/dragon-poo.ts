@@ -124,7 +124,7 @@ export function setupGame(ctx?: Ctx) {
     discardPile: []
   };
 
-  game.deck.push(...Array<Card>(5).fill({
+  game.deck.push(...Array<Card>(6).fill({
     title: 'Bait', 
     text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.',
   }));
@@ -133,12 +133,12 @@ export function setupGame(ctx?: Ctx) {
     text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
   }));
   game.deck.push(...Array<Card>(4).fill({
-    title: 'Catapult', 
-    text: 'Place a Catapult token anywhere on the board. If the Dragon or a Goblin is in the same Tile as a Catapult, it is moved in the direction of the Catapult&apos;s color.',
+    title: 'Scurry!', 
+    text: 'Move one space, even over a Wall.',
   }));
   game.deck.push(...Array<Card>(4).fill({
-    title: 'Big Hammer', 
-    text: 'Play this card to destroy any Poo, Wall, or Catapult on the Table',
+    title: 'Smash Stuff!', 
+    text: 'Play this card to destroy any Poo or Wall on the Game Board',
   }));
   game.deck.push({
     title: 'Hidey Hole', 
@@ -231,9 +231,9 @@ export function performCardEffect(G: GameState, played: Card, cardContext?: any)
     case 'Walls':
       G.walls.push({from: cardContext.from, to: cardContext.to});
       break;
-    case 'Catapult':
+    case 'Scurry!':
       break;
-    case 'Big Hammer':
+    case 'Smash Stuff!':
       break;
     case 'Hidey Hole':
       break;
