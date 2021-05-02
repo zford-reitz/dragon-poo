@@ -101,17 +101,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
       borderRight: '1px solid #555',
       width: '50px',
       height: '50px',
-      lineHeight: '50px',
-      position: 'relative'
-    };
-
-    const dragonStyle: CSSProperties = {
-      position: 'absolute',
-      top: '5px'
-    };
-
-    const pooStyle: CSSProperties = {
-      position: 'absolute',
+      lineHeight: '50px'
     };
 
     const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
@@ -131,11 +121,11 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         const id = 5 * i + j;
         let cellContents = [];
         if (this.props.G.cells[i][j].includes('Dragon')) {
-          cellContents.push(<img src="icons/dragon.svg" width="50px" style={dragonStyle}></img>);
+          cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
         }
 
         for (let p of _.filter(this.props.G.cells[i][j], e => e === 'P')) {
-          cellContents.push(<img src="icons/poo.svg" width="20px" style={pooStyle}></img>);
+          cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
         }
 
         cells.push(
