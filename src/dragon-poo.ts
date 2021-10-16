@@ -76,25 +76,25 @@ function setupPlayers(ctx: Ctx): PlayerMap {
     "1": playerBlue
   }
 
-  if (ctx.numPlayers > 2) {
-    const playerGreen: Player = {
-      entranceRows: [1, 2, 3],
-      entranceColumns: [4],
-      poo: 0,
-      hand: []
-    };
-      players["2"] = playerGreen;
-  }
+    if (ctx?.numPlayers > 2) {
+        const playerGreen: Player = {
+            entranceRows: [1, 2, 3],
+            entranceColumns: [4],
+            poo: 0,
+            hand: []
+        };
+        players["2"] = playerGreen;
+    }
 
-  if (ctx.numPlayers > 3) {
-    const playerWhite: Player = {
-      entranceRows: [4],
-      entranceColumns: [1, 2, 3],
-      poo: 0,
-      hand: []
-    };
-      players["3"] = playerWhite;
-  }
+    if (ctx?.numPlayers > 3) {
+        const playerWhite: Player = {
+            entranceRows: [4],
+            entranceColumns: [1, 2, 3],
+            poo: 0,
+            hand: []
+        };
+        players["3"] = playerWhite;
+    }
 
   return players;
 }
