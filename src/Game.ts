@@ -1,6 +1,6 @@
 import { GameState } from "./GameState";
 import { Game, Ctx } from "boardgame.io";
-import { setupGame, enterBoard, moveGoblin, playCard, endTurn, setupKidGame, onEndTurn } from "./dragon-poo";
+import {setupGame, enterBoard, moveGoblin, playCard, endTurn, setupKidGame, onEndTurn, buildWall} from "./dragon-poo";
 
 
 export const DragonPoo: Game<GameState> = {
@@ -19,7 +19,7 @@ export const DragonPoo: Game<GameState> = {
           next: 'playCard'
         },
         playCard: {
-          moves: {playCard, endTurn}
+          moves: {buildWall, endTurn}
         }
       }
     },

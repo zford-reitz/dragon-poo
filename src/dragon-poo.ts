@@ -224,22 +224,35 @@ export function playCard(G: GameState, ctx: Ctx, toPlay: Card, cardContext?: any
   endTurn(G, ctx);
 }
 
+export function buildWall(G: GameState, ctx: Ctx, cardContext: Wall) {
+    const player = G.players[ctx.currentPlayer];
+
+    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Walls'});
+    if (indexOfCardInHand === -1) {
+        return INVALID_MOVE;
+    }
+
+    G.walls.push(cardContext);
+
+    G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+
+    drawCard(G, ctx, player);
+    endTurn(G, ctx);
+}
+
 export function performCardEffect(G: GameState, played: Card, cardContext?: any) {
-  switch (played.title) {
-    case 'Bait':
-      break;
-    case 'Walls':
-      G.walls.push({from: cardContext.from, to: cardContext.to});
-      break;
-    case 'Scurry!':
-      break;
-    case 'Smash Stuff!':
-      break;
-    case 'Hidey Hole':
-      break;
-    default:
-      return INVALID_MOVE;
-  }
+    switch (played.title) {
+        case 'Bait':
+            break;
+        case 'Scurry!':
+            break;
+        case 'Smash Stuff!':
+            break;
+        case 'Hidey Hole':
+            break;
+        default:
+            return INVALID_MOVE;
+    }
 }
 
 export function isOrthogonal(a: Location, b: Location): boolean {

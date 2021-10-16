@@ -52,7 +52,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         const location2: Location = {row: row, column: column};
 
         if (isOrthogonal(location1, location2) && !findBlockingWall(this.props.G, location1, location2)) {
-          this.props.moves.playCard(this.state.card!, {from: location1, to: location2});
+          this.props.moves.buildWall({from: location1, to: location2});
         }
 
         this.setState({action: undefined, card: undefined, clicks: []});
