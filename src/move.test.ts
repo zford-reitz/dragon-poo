@@ -1,9 +1,8 @@
-import { setupGame, findPlayerLocation, DRAGON, unsafeMoveDragon, moveGoblin, movePiece} from "./dragon-poo";
-import { GameState } from "./GameState";
-import { Ctx } from "boardgame.io";
-import { INVALID_MOVE } from 'boardgame.io/core';
-import { EventsAPI } from "boardgame.io/dist/types/src/plugins/events/events";
-import { Wall } from "./wall";
+import {DRAGON, findPlayerLocation, moveGoblin, movePiece, setupGame, unsafeMoveDragon} from "./dragon-poo";
+import {GameState} from "./GameState";
+import {Ctx} from "boardgame.io";
+import {INVALID_MOVE} from 'boardgame.io/core';
+import {EventsAPI} from "boardgame.io/dist/types/src/plugins/events/events";
 
 it('player moves one space up', () => {
     const G = setupGame();
@@ -86,7 +85,12 @@ it('player cannot move through a wall', () => {
 });
 
 function createCtx(currentPlayer: string): Ctx {
-    return {currentPlayer: currentPlayer, events: {endStage: () => {}}} as Ctx;
+    return {
+        currentPlayer: currentPlayer, events: {
+            endStage: () => {
+            }
+        }
+    } as Ctx;
 }
 
 function positionPlayerAt(G: GameState, playerID: string, row: number, column: number) {

@@ -1,5 +1,5 @@
-import {setupGame, findPlayerLocation, pickUpPoo, movePiece} from "./dragon-poo";
-import { GameState } from "./GameState";
+import {findPlayerLocation, movePiece, pickUpPoo, setupGame} from "./dragon-poo";
+import {GameState} from "./GameState";
 
 it('player picks up no poo because there is no poo at their location', () => {
     const G = setupGame();

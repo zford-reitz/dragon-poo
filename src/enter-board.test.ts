@@ -1,8 +1,8 @@
-import {enterBoard, setupGame, unsafeMoveDragon, findPlayerLocation, removeFromLocation} from "./dragon-poo";
-import { INVALID_MOVE } from "boardgame.io/core";
-import { Ctx } from "boardgame.io";
-import { GameState } from "./GameState";
-import { EventsAPI } from "boardgame.io/dist/types/src/plugins/events/events";
+import {enterBoard, findPlayerLocation, removeFromLocation, setupGame, unsafeMoveDragon} from "./dragon-poo";
+import {INVALID_MOVE} from "boardgame.io/core";
+import {Ctx} from "boardgame.io";
+import {GameState} from "./GameState";
+import {EventsAPI} from "boardgame.io/dist/types/src/plugins/events/events";
 
 it('left player enters in middle of left side', () => {
     const G = setupGame();
@@ -45,7 +45,7 @@ it('player cannot enter if dragon is on square', () => {
 it('top player cannot enter at top of left side', () => {
     const G = setupGame();
     const actualInvalidMove = enterBoard(G, createCtx("1"), 1, 0);
-    
+
     expect(actualInvalidMove).toBe(INVALID_MOVE);
     expect(G.cells[1][0]).not.toContain("1");
 });
@@ -55,15 +55,23 @@ it('player cannot enter the board if that player is already on the board', () =>
     const endStageFn = jest.fn();
 
     positionPlayerAt(G, "0", 3, 0);
-    const actualInvalidMove = enterBoard(G, {currentPlayer: "0", events: {endStage: endStageFn} as EventsAPI} as Ctx, 2, 0);
-    
+    const actualInvalidMove = enterBoard(G, {
+        currentPlayer: "0",
+        events: {endStage: endStageFn} as EventsAPI
+    } as Ctx, 2, 0);
+
     expect(actualInvalidMove).toBe(INVALID_MOVE);
     expect(G.cells[2][0]).not.toContain("1");
     expect(endStageFn.mock.calls.length).toBe(0);
 });
 
 function createCtx(currentPlayer: string): Ctx {
-    return {currentPlayer: currentPlayer, events: {endStage: () => {}}} as Ctx;
+    return {
+        currentPlayer: currentPlayer, events: {
+            endStage: () => {
+            }
+        }
+    } as Ctx;
 }
 
 function positionPlayerAt(G: GameState, playerID: string, row: number, column: number) {

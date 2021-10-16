@@ -1,6 +1,16 @@
-import {moveDragon, setupGame, findPlayerLocation, DRAGON, unsafeMoveDragon, placeWall, createDragonPoo, findDragonLocation, movePiece} from "./dragon-poo";
+import {
+    createDragonPoo,
+    DRAGON,
+    findDragonLocation,
+    findPlayerLocation,
+    moveDragon,
+    movePiece,
+    placeWall,
+    setupGame,
+    unsafeMoveDragon
+} from "./dragon-poo";
 import * as _ from "lodash";
-import { GameState } from "./GameState";
+import {GameState} from "./GameState";
 
 it('dragon moves one space left', () => {
     const G = setupGame();

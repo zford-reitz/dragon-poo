@@ -1,6 +1,6 @@
-import { GameState } from "./GameState";
-import { Game, Ctx } from "boardgame.io";
-import {setupGame, enterBoard, moveGoblin, playCard, endTurn, setupKidGame, onEndTurn, buildWall} from "./dragon-poo";
+import {GameState} from "./GameState";
+import {Ctx, Game} from "boardgame.io";
+import {buildWall, endTurn, enterBoard, moveGoblin, onEndTurn, playCard, setupGame, setupKidGame} from "./dragon-poo";
 
 
 export const DragonPoo: Game<GameState> = {
@@ -9,48 +9,48 @@ export const DragonPoo: Game<GameState> = {
     maxPlayers: 4,
     setup: setupGame,
     turn: {
-      onEnd: onEndTurn,
-      activePlayers: {
-        currentPlayer: 'move'
-      },
-      stages: {
-        move: {
-          moves: {moveGoblin, enterBoard, endTurn},
-          next: 'playCard'
+        onEnd: onEndTurn,
+        activePlayers: {
+            currentPlayer: 'move'
         },
-        playCard: {
-          moves: {buildWall, endTurn}
+        stages: {
+            move: {
+                moves: {moveGoblin, enterBoard, endTurn},
+                next: 'playCard'
+            },
+            playCard: {
+                moves: {buildWall, endTurn}
+            }
         }
-      }
     },
     endIf: (G: GameState, ctx: Ctx) => {
-      for (let playerID in G.players) {
-        let player = G.players[playerID];
-        if (player.poo >= 5) {
-          return {winner: playerID};
+        for (let playerID in G.players) {
+            let player = G.players[playerID];
+            if (player.poo >= 5) {
+                return {winner: playerID};
+            }
         }
-      }
     }
-  
-  };
-  
-  export const DragonPooKids: Game<GameState> = {
+
+};
+
+export const DragonPooKids: Game<GameState> = {
     name: 'DragonPooKids',
     minPlayers: 2,
     maxPlayers: 4,
     setup: setupKidGame,
     moves: {moveGoblin, enterBoard, endTurn},
     turn: {
-      onEnd: onEndTurn,
-      moveLimit: 1
+        onEnd: onEndTurn,
+        moveLimit: 1
     },
     endIf: (G: GameState, ctx: Ctx) => {
-      for (let playerID in G.players) {
-        let player = G.players[playerID];
-        if (player.poo >= 3) {
-          return {winner: playerID};
+        for (let playerID in G.players) {
+            let player = G.players[playerID];
+            if (player.poo >= 3) {
+                return {winner: playerID};
+            }
         }
-      }
     }
-  
-  };
+
+};

@@ -1,18 +1,18 @@
 import React from 'react';
-import { Lobby } from 'boardgame.io/react';
-import { DragonPoo, DragonPooKids } from './Game';
-import { DragonPooBoard } from './Board';
+import {Lobby} from 'boardgame.io/react';
+import {DragonPoo, DragonPooKids} from './Game';
+import {DragonPooBoard} from './Board';
 
-const { protocol, hostname, port } = window.location;
+const {protocol, hostname, port} = window.location;
 const server = `${protocol}//${hostname}:${port}`;
 const importedGames = [
-  { game: DragonPooKids, board: DragonPooBoard },
-  { game: DragonPoo, board: DragonPooBoard }
+    {game: DragonPooKids, board: DragonPooBoard},
+    {game: DragonPoo, board: DragonPooBoard}
 ];
 
 export default () => (
-  <div>
-    <h1>Lobby</h1>
-    <Lobby gameServer={server} lobbyServer={server} gameComponents={importedGames} />
-  </div>
+    <div>
+        <h1>Lobby</h1>
+        <Lobby gameServer={server} lobbyServer={server} gameComponents={importedGames}/>
+    </div>
 );
