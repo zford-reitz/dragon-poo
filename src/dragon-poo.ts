@@ -17,13 +17,13 @@ type ColorDirections = {
 
 const DRAGON_DIE_COLORS: DragonDieColor[] = ['orange', 'blue', 'green', 'white', 'brown', 'brown'];
 const DIRECTIONS_BY_COLOR: ColorDirections = {
-    orange: "left",
-    blue: "up",
-    green: "right",
-    white: "down",
+    orange: 'left',
+    blue: 'up',
+    green: 'right',
+    white: 'down',
     brown: undefined
 };
-export const DRAGON = "Dragon";
+export const DRAGON = 'Dragon';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -72,28 +72,26 @@ function setupPlayers(ctx: Ctx): PlayerMap {
     };
 
     let players: PlayerMap = {
-        "0": playerOrange,
-        "1": playerBlue
+        '0': playerOrange,
+        '1': playerBlue
     }
 
     if (ctx?.numPlayers > 2) {
-        const playerGreen: Player = {
+        players['2'] = {
             entranceRows: [1, 2, 3],
             entranceColumns: [4],
             poo: 0,
             hand: []
         };
-        players["2"] = playerGreen;
     }
 
     if (ctx?.numPlayers > 3) {
-        const playerWhite: Player = {
+        players['3'] = {
             entranceRows: [4],
             entranceColumns: [1, 2, 3],
             poo: 0,
             hand: []
         };
-        players["3"] = playerWhite;
     }
 
     return players;
@@ -205,7 +203,7 @@ export function moveGoblin(G: GameState, ctx: Ctx, targetLocation: Location): un
     ctx.events!.endStage!();
 }
 
-export function playCard(G: GameState, ctx: Ctx, toPlay: Card, cardContext?: any) {
+export function playCard(G: GameState, ctx: Ctx, toPlay: Card) {
     const player = G.players[ctx.currentPlayer];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: toPlay.title});
@@ -213,7 +211,7 @@ export function playCard(G: GameState, ctx: Ctx, toPlay: Card, cardContext?: any
         return INVALID_MOVE;
     }
 
-    const cardEffectResult = performCardEffect(G, toPlay, cardContext);
+    const cardEffectResult = performCardEffect(G, toPlay);
     if (cardEffectResult === INVALID_MOVE) {
         return INVALID_MOVE;
     }
@@ -240,7 +238,7 @@ export function buildWall(G: GameState, ctx: Ctx, cardContext: Wall) {
     endTurn(G, ctx);
 }
 
-export function performCardEffect(G: GameState, played: Card, cardContext?: any) {
+export function performCardEffect(G: GameState, played: Card) {
     switch (played.title) {
         case 'Bait':
             break;
@@ -311,7 +309,7 @@ export function moveDragon(G: GameState, direction: Direction) {
     const initialLocation = findDragonLocation(G.cells);
 
     if (initialLocation) {
-        var newLocation = moveFrom(initialLocation, direction);
+        let newLocation = moveFrom(initialLocation, direction);
         const blockingWall = findBlockingWall(G, initialLocation, newLocation);
         if (blockingWall) {
             _.remove(G.walls, blockingWall);
@@ -335,7 +333,7 @@ export function moveDragon(G: GameState, direction: Direction) {
 }
 
 function dropPooAndRun(G: GameState, player: Player): void {
-    for (var i = 0; i < player.poo; i++) {
+    for (let i = 0; i < player.poo; i++) {
         createDragonPoo(G);
     }
 
@@ -358,14 +356,14 @@ export function placeWall(G: GameState, location: Location, direction: Direction
 export function createDragonPoo(G: GameState) {
     const dragonLocation = findDragonLocation(G.cells);
     if (dragonLocation) {
-        getPiecesAt(G, dragonLocation).push("P");
+        getPiecesAt(G, dragonLocation).push('P');
     }
 }
 
 export function pickUpPoo(G: GameState, playerID: string) {
     const playerLocation = findPlayerLocation(playerID, G.cells);
     if (playerLocation) {
-        G.players[playerID].poo += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === "P").length;
+        G.players[playerID].poo += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === 'P').length;
     }
 }
 

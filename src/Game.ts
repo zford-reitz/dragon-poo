@@ -1,6 +1,6 @@
-import {GameState} from "./GameState";
-import {Ctx, Game} from "boardgame.io";
-import {buildWall, endTurn, enterBoard, moveGoblin, onEndTurn, playCard, setupGame, setupKidGame} from "./dragon-poo";
+import {GameState} from './GameState';
+import {Game} from 'boardgame.io';
+import {buildWall, endTurn, enterBoard, moveGoblin, onEndTurn, setupGame, setupKidGame} from './dragon-poo';
 
 
 export const DragonPoo: Game<GameState> = {
@@ -23,7 +23,7 @@ export const DragonPoo: Game<GameState> = {
             }
         }
     },
-    endIf: (G: GameState, ctx: Ctx) => {
+    endIf: (G: GameState) => {
         for (let playerID in G.players) {
             let player = G.players[playerID];
             if (player.poo >= 5) {
@@ -44,7 +44,7 @@ export const DragonPooKids: Game<GameState> = {
         onEnd: onEndTurn,
         moveLimit: 1
     },
-    endIf: (G: GameState, ctx: Ctx) => {
+    endIf: (G: GameState) => {
         for (let playerID in G.players) {
             let player = G.players[playerID];
             if (player.poo >= 3) {

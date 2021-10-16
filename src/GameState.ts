@@ -1,6 +1,6 @@
-import {Player} from "./Player";
-import {Wall} from "./wall";
-import {Card} from "./Card";
+import {Player} from './Player';
+import {Wall} from './wall';
+import {Card} from './Card';
 
 export interface PlayerMap {
     [key: string]: Player;

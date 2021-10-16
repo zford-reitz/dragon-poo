@@ -1,10 +1,10 @@
-import {playCard} from "./dragon-poo";
-import {GameState} from "./GameState";
-import {Ctx} from "boardgame.io";
-import {Card} from "./Card";
-import {Player} from "./Player";
-import {EventsAPI} from "boardgame.io/dist/types/src/plugins/events/events";
-import {INVALID_MOVE} from "boardgame.io/core";
+import {playCard} from './dragon-poo';
+import {GameState} from './GameState';
+import {Ctx} from 'boardgame.io';
+import {Card} from './Card';
+import {Player} from './Player';
+import {EventsAPI} from 'boardgame.io/dist/types/src/plugins/events/events';
+import {INVALID_MOVE} from 'boardgame.io/core';
 
 // TODO zeb this test doesn't test anything at the moment. make it possible to spy on or verify the card effect.
 xit('playing a card performs the effect of the card', () => {
