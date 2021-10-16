@@ -324,18 +324,22 @@ export function moveDragon(G: GameState, direction: Direction) {
     }
   }
 
-  // do we stomp anyone?
-  const newDragonLocation = findDragonLocation(G.cells);
-  if (newDragonLocation) {
-    const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
-    _.remove(cell, e => e !== DRAGON && e !== "P").forEach((playerID: any) => {
-      const player = G.players[playerID as number];
-      for (var i = 0; i < player.poo; i++) {
+    // do we stomp anyone?
+    const newDragonLocation = findDragonLocation(G.cells);
+    if (newDragonLocation) {
+        const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
+        _.remove(cell, e => e !== DRAGON && e !== 'P')
+            .map(playerId => G.players[playerId])
+            .forEach(player => dropPooAndRun(G, player));
+    }
+}
+
+function dropPooAndRun(G: GameState, player: Player): void {
+    for (var i = 0; i < player.poo; i++) {
         createDragonPoo(G);
-      }
-      player.poo = 0;
-    });
-  }
+    }
+
+    player.poo = 0;
 }
 
 export function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
