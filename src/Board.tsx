@@ -29,8 +29,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         if (clicked.title === 'Walls') {
             this.setState({action: 'PlaceWallFirstSpace', card: clicked});
             console.log('setting up placing a wall');
-        } else {
-            this.props.moves.playCard(clicked);
+        } else if (clicked.title === 'Bait') {
+            this.setState({action: 'PlaceBait', card: clicked});
         }
     }
 
@@ -55,6 +55,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                     this.props.moves.buildWall({from: location1, to: location2});
                 }
 
+                this.setState({action: undefined, card: undefined, clicks: []});
+            } else if (this.state.action === 'PlaceBait') {
+                this.props.moves.placeBait({row: row, column: column});
                 this.setState({action: undefined, card: undefined, clicks: []});
             }
 

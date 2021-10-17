@@ -238,6 +238,22 @@ export function buildWall(G: GameState, ctx: Ctx, cardContext: Wall) {
     endTurn(G, ctx);
 }
 
+export function placeBait(G: GameState, ctx: Ctx, location: Location) {
+    const player = G.players[ctx.currentPlayer];
+
+    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Bait'});
+    if (indexOfCardInHand === -1) {
+        return INVALID_MOVE;
+    }
+
+    G.cells[location.row][location.column].push('Bait');
+
+    G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+
+    drawCard(G, ctx, player);
+    endTurn(G, ctx);
+}
+
 export function performCardEffect(G: GameState, played: Card) {
     switch (played.title) {
         case 'Bait':
