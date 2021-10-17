@@ -104,7 +104,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             borderRight: '1px solid #555',
             width: '50px',
             height: '50px',
-            lineHeight: '50px'
+            lineHeight: '50px',
+            textAlign: 'center'
         };
 
         const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
@@ -134,10 +135,23 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                     cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
                 }
 
+                if (this.props.G.cells[i][j].includes('0')) {
+                    cellContents.push(<span className="player player-orange"></span>);
+                }
+                if (this.props.G.cells[i][j].includes('1')) {
+                    cellContents.push(<span className="player player-blue"></span>);
+                }
+                if (this.props.G.cells[i][j].includes('2')) {
+                    cellContents.push(<span className="player player-green"></span>);
+                }
+                if (this.props.G.cells[i][j].includes('3')) {
+                    cellContents.push(<span className="player player-white"></span>);
+                }
+
                 cells.push(
                     <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
                         {cellContents}
-                        <span>{_(this.props.G.cells[i][j]).without('Dragon').without('P').join()}</span>
+                        <span>{_(this.props.G.cells[i][j]).without('Dragon').without('P').without('0').without('1').without('2').without('3').join()}</span>
                     </td>
                 );
             }
@@ -176,15 +190,15 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         return (
             <div>
                 <div className="grid">
-                    <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' : '0'}</div>
-                    <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' : '1'}</div>
+                    <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' : <span className="player player-orange"></span>}</div>
+                    <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' : <span className="player player-blue"></span>}</div>
                     <div className="center">
                         <table id="board">
                             <tbody>{tbody}</tbody>
                         </table>
                     </div>
-                    <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : '2'}</div>
-                    <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : '3'}</div>
+                    <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : <span className="player player-green"></span>}</div>
+                    <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : <span className="player player-white"></span>}</div>
                 </div>
                 <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>
                 <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
