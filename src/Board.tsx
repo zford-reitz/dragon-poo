@@ -1,4 +1,4 @@
-import React, {CSSProperties} from 'react';
+import React, {CSSProperties, ReactElement} from 'react';
 import {BoardProps} from 'boardgame.io/react';
 import './App.css';
 import {GameState} from './GameState';
@@ -126,32 +126,11 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 }
 
                 const id = 5 * i + j;
-                let cellContents = [];
-                if (this.props.G.cells[i][j].includes('Dragon')) {
-                    cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
-                }
-
-                for (let p of _.filter(this.props.G.cells[i][j], e => e === 'P')) {
-                    cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
-                }
-
-                if (this.props.G.cells[i][j].includes('0')) {
-                    cellContents.push(<span className="player player-orange"></span>);
-                }
-                if (this.props.G.cells[i][j].includes('1')) {
-                    cellContents.push(<span className="player player-blue"></span>);
-                }
-                if (this.props.G.cells[i][j].includes('2')) {
-                    cellContents.push(<span className="player player-green"></span>);
-                }
-                if (this.props.G.cells[i][j].includes('3')) {
-                    cellContents.push(<span className="player player-white"></span>);
-                }
+                let cellContents = this.convertCellContents(this.props.G.cells[i][j]);
 
                 cells.push(
                     <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
                         {cellContents}
-                        <span>{_(this.props.G.cells[i][j]).without('Dragon').without('P').without('0').without('1').without('2').without('3').join()}</span>
                     </td>
                 );
             }
@@ -215,4 +194,36 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         );
     }
 
+    private convertCellContents(textualContents: string[]): ReactElement[] {
+        let cellContents: ReactElement[] = [];
+
+        if (textualContents.includes('Dragon')) {
+            cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
+        }
+
+        for (let p of _.filter(textualContents, e => e === 'P')) {
+            cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
+        }
+
+        if (textualContents.includes('0')) {
+            cellContents.push(<span className="player player-orange"></span>);
+        }
+        if (textualContents.includes('1')) {
+            cellContents.push(<span className="player player-blue"></span>);
+        }
+        if (textualContents.includes('2')) {
+            cellContents.push(<span className="player player-green"></span>);
+        }
+        if (textualContents.includes('3')) {
+            cellContents.push(<span className="player player-white"></span>);
+        }
+
+        const unhandledContents = _(textualContents)
+            .without('Dragon', 'P', '0', '1', '2', '3')
+            .join();
+
+        cellContents.push(<span>{unhandledContents}</span>);
+
+        return cellContents;
+    }
 }
