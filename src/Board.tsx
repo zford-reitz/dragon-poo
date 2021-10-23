@@ -116,12 +116,10 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             let cells: JSX.Element[] = [];
             for (let j = 0; j < 5; j++) {
                 const thisCellStyle = _.cloneDeep(cellStyle);
-                this.applyWallStyles({row: i, column: j}, thisCellStyle);
+                const location = {row: i, column: j};
+                this.applyWallStyles(location, thisCellStyle);
 
-                if (isMoving && (canMoveGoblin(this.props.G, playerLocation, {
-                    row: i,
-                    column: j
-                }) || canEnterBoard(this.props.G, this.props.ctx, i, j))) {
+                if (isMoving && (canMoveGoblin(this.props.G, playerLocation, location) || canEnterBoard(this.props.G, this.props.ctx, i, j))) {
                     thisCellStyle.backgroundColor = 'pink';
                 }
 
@@ -140,7 +138,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         let pooCounts = [];
         for (let playerId in this.props.G.players) {
             pooCounts.push(
-                <div>Player {playerId} poo: {this.props.G.players[playerId].poo}</div>
+                <div><span className={this.playerToStyleMap().get(playerId)}>Poo</span>: {this.props.G.players[playerId].poo}</div>
             );
         }
 
@@ -217,25 +215,29 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
         }
 
-        if (textualContents.includes('0')) {
-            cellContents.push(<span className="player player-orange"></span>);
-        }
-        if (textualContents.includes('1')) {
-            cellContents.push(<span className="player player-blue"></span>);
-        }
-        if (textualContents.includes('2')) {
-            cellContents.push(<span className="player player-green"></span>);
-        }
-        if (textualContents.includes('3')) {
-            cellContents.push(<span className="player player-white"></span>);
+        const playerToStyleMap = this.playerToStyleMap();
+        for (let token of textualContents) {
+            if (playerToStyleMap.has(token)) {
+                cellContents.push(<span className={"player " + playerToStyleMap.get(token)}></span>);
+            }
         }
 
         const unhandledContents = _(textualContents)
-            .without('Dragon', 'P', '0', '1', '2', '3')
+            .without('Dragon', 'P')
+            .without(...playerToStyleMap.keys())
             .join();
 
         cellContents.push(<span>{unhandledContents}</span>);
 
         return cellContents;
+    }
+
+    private playerToStyleMap(): Map<string, string> {
+        const map = new Map<string, string>();
+        map.set('0', 'player-orange');
+        map.set('1', 'player-blue');
+        map.set('2', 'player-green');
+        map.set('3', 'player-white');
+        return map;
     }
 }
