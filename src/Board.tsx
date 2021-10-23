@@ -1,7 +1,7 @@
 import React, {CSSProperties, ReactElement} from 'react';
 import {BoardProps} from 'boardgame.io/react';
 import './App.css';
-import {GameState} from './GameState';
+import {DragonDieColor, GameState} from './GameState';
 import {canEnterBoard, canMoveGoblin, findBlockingWall, findPlayerLocation, isOrthogonal} from './dragon-poo';
 import {Card} from './Card';
 import {Location} from './location';
@@ -109,7 +109,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         };
 
         const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-        const isMoving = this.props.isActive && (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move' || this.props.G.deck.length === 0);
+        const isMoving = this.props.isActive && (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move' || this.isKidGame());
 
         let tbody = [];
         for (let i = 0; i < 5; i++) {
@@ -169,19 +169,23 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         return (
             <div>
                 <div className="grid">
-                    <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' : <span className="player player-orange"></span>}</div>
-                    <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' : <span className="player player-blue"></span>}</div>
+                    <div className="start-zone-1">{piecesOnBoard.includes('0') ? '' :
+                        <span className="player player-orange"></span>}</div>
+                    <div className="start-zone-2">{piecesOnBoard.includes('1') ? '' :
+                        <span className="player player-blue"></span>}</div>
                     <div className="center">
                         <table id="board">
                             <tbody>{tbody}</tbody>
                         </table>
                     </div>
-                    <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' : <span className="player player-green"></span>}</div>
-                    <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' : <span className="player player-white"></span>}</div>
+                    <div className="start-zone-3">{piecesOnBoard.includes('2') ? '' :
+                        <span className="player player-green"></span>}</div>
+                    <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' :
+                        <span className="player player-white"></span>}</div>
                 </div>
-                <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>
-                <div className="dragon-die">Dragon Die roll: {this.props.G.dragonDieRoll}</div>
-                <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>
+                {!this.isKidGame() && <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>}
+                {this.dragonDie(this.props.G.dragonDieRoll)}
+                {!this.isKidGame() && <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
                 {pooCounts}
                 {cancelButton}
                 {winner}
@@ -192,6 +196,14 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 Poo Icon by OpenMoji, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=69428124<br/>
             </div>
         );
+    }
+
+    private isKidGame() {
+        return this.props.G.deck.length === 0;
+    }
+
+    private dragonDie(currentColor: DragonDieColor) {
+        return <div className="dragon-die">Dragon Die roll: {currentColor}</div>;
     }
 
     private convertCellContents(textualContents: string[]): ReactElement[] {
