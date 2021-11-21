@@ -97,6 +97,20 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     }
 
     render() {
+        let winner: any = undefined;
+        let winnerBackgroundColor: string | undefined = undefined;
+        if (this.props.ctx.gameover) {
+            winnerBackgroundColor = this.playerToStyleMap().get(this.props.ctx.gameover.winner);
+
+            winner =
+                this.props.ctx.gameover.winner !== undefined ? (
+                    <div id="winner"><span>Winner: </span><span className={'player ' + winnerBackgroundColor}></span></div>
+                ) : (
+                    <div id="winner">Draw!</div>
+                );
+        }
+
+
         const cellStyle: CSSProperties = {
             borderTop: '1px solid #555',
             borderBottom: '1px solid #555',
@@ -127,7 +141,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 let cellContents = this.convertCellContents(this.props.G.cells[i][j]);
 
                 cells.push(
-                    <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}>
+                    <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)} className={winnerBackgroundColor}>
                         {cellContents}
                     </td>
                 );
@@ -143,16 +157,6 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         }
 
         const piecesOnBoard = this.props.G.cells.flat(Infinity);
-
-        let winner: any = undefined;
-        if (this.props.ctx.gameover) {
-            winner =
-                this.props.ctx.gameover.winner !== undefined ? (
-                    <div id="winner">Winner: {this.props.ctx.gameover.winner}</div>
-                ) : (
-                    <div id="winner">Draw!</div>
-                );
-        }
 
         let cancelButton = undefined;
         if (this.state.action) {
