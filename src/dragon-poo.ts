@@ -6,6 +6,7 @@ import {Ctx} from 'boardgame.io';
 import {DragonDieColor, GameState, PlayerMap} from './GameState';
 import {Card} from './Card';
 import {Player} from './Player';
+import {possibleMoves} from "./dragon-bait-pathing";
 
 type ColorDirections = {
     orange: Direction;
@@ -24,7 +25,7 @@ const DIRECTIONS_BY_COLOR: ColorDirections = {
     brown: undefined
 };
 export const DRAGON = 'Dragon';
-
+export const BAIT = 'Bait';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export function moveFrom(startLocation: Location, direction: Direction): Location {
@@ -246,7 +247,7 @@ export function placeBait(G: GameState, ctx: Ctx, location: Location) {
         return INVALID_MOVE;
     }
 
-    G.cells[location.row][location.column].push('Bait');
+    G.cells[location.row][location.column].push(BAIT);
 
     G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
@@ -321,6 +322,19 @@ function findPiece(grid: string[][][], piece: string): Location | undefined {
     }
 }
 
+function findPieces(grid: string[][][], piece: string): Location[] {
+    const locations: Location[] = [];
+    for (let row = 0; row < grid.length; row++) {
+        for (let column = 0; column < grid[row].length; column++) {
+            if (grid[row][column].includes(piece)) {
+                locations.push({row: row, column: column});
+            }
+        }
+    }
+
+    return locations;
+}
+
 export function moveDragon(G: GameState, direction: Direction) {
     const initialLocation = findDragonLocation(G.cells);
 
@@ -337,6 +351,8 @@ export function moveDragon(G: GameState, direction: Direction) {
             movePiece(G, DRAGON, initialLocation, newLocation);
         }
     }
+
+    dragonEatsBait(G);
 
     // do we stomp anyone?
     const newDragonLocation = findDragonLocation(G.cells);
@@ -396,22 +412,62 @@ function getPiecesAt(G: GameState, location: Location) {
 }
 
 export function endTurn(G: GameState, ctx: Ctx) {
+    // TODO zeb this shouldn't directly end the turn
+    //          instead, it should enter an "endTurn" sort of stage, where
+    //          we determine Dragon movement based on Bait or Dragon Die Roll.
+    //          that's where our current "onEndTurn" logic should also land
     ctx.events!.endTurn!();
+}
+
+function dragonEatsBait(G: GameState) {
+    const dragonLocation = findDragonLocation(G.cells)!;
+    const cell = G.cells[dragonLocation.row][dragonLocation.column];
+    _.pull(cell, BAIT);
 }
 
 export function onEndTurn(G: GameState, ctx: Ctx) {
     pickUpPoo(G, ctx.currentPlayer);
-    rollDragonDie(G, ctx);
 
-    const dragonMoveDirection = DIRECTIONS_BY_COLOR[G.dragonDieRoll];
-    if (dragonMoveDirection) {
-        moveDragon(G, dragonMoveDirection);
+    dragonEatsBait(G);
+
+    const baitLocations = findPieces(G.cells, BAIT);
+    if (_.isEmpty(baitLocations)) {
+        rollDragonDie(G, ctx);
+
+        const dragonMoveDirection = DIRECTIONS_BY_COLOR[G.dragonDieRoll];
+        if (dragonMoveDirection) {
+            moveDragon(G, dragonMoveDirection);
+        } else {
+            createDragonPoo(G);
+        }
     } else {
-        createDragonPoo(G);
+        const possibleDirections = findDirectionsForShortestDragonPaths(G, baitLocations);
+        moveDragon(G, possibleDirections[0]);
     }
 }
 
 export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {
     return (_.isEqual(initialLocation, wall.from) && _.isEqual(newLocation, wall.to))
         || (_.isEqual(initialLocation, wall.to) && _.isEqual(newLocation, wall.from));
+}
+
+function findDirectionsForShortestDragonPaths(G: GameState, baitLocations: Location[]): Direction[] {
+    const initialLocation = findPiece(G.cells, DRAGON)!;
+    return possibleMoves(initialLocation, baitLocations, G.walls).map(l => direction(initialLocation, l));
+}
+
+export function direction(from: Location, to: Location) {
+    if (from.row === to.row) {
+        if (from.column > to.column) {
+            return 'left';
+        }
+
+        return 'right';
+    }
+
+    if (from.row > to.row) {
+        return 'up';
+    }
+
+    return 'down';
 }
