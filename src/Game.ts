@@ -1,6 +1,15 @@
 import {GameState} from './GameState';
 import {Game} from 'boardgame.io';
-import {buildWall, endTurn, enterBoard, moveGoblin, onEndTurn, placeBait, setupGame, setupKidGame} from './dragon-poo';
+import {
+    buildWall,
+    endTurn,
+    enterBoard,
+    guideDragon,
+    moveGoblin,
+    placeBait,
+    setupGame,
+    setupKidGame
+} from './dragon-poo';
 
 
 export const DragonPoo: Game<GameState> = {
@@ -9,7 +18,6 @@ export const DragonPoo: Game<GameState> = {
     maxPlayers: 4,
     setup: setupGame,
     turn: {
-        onEnd: onEndTurn,
         activePlayers: {
             currentPlayer: 'move'
         },
@@ -20,6 +28,9 @@ export const DragonPoo: Game<GameState> = {
             },
             playCard: {
                 moves: {buildWall, placeBait, endTurn}
+            },
+            guideDragon: {
+                moves: {guideDragon}
             }
         }
     },
@@ -41,8 +52,7 @@ export const DragonPooKids: Game<GameState> = {
     setup: setupKidGame,
     moves: {moveGoblin, enterBoard, endTurn},
     turn: {
-        onEnd: onEndTurn,
-        moveLimit: 1
+        onMove: endTurn
     },
     endIf: (G: GameState) => {
         for (let playerID in G.players) {

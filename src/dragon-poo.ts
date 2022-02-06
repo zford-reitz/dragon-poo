@@ -308,8 +308,8 @@ export function findPlayerLocation(playerID: string, grid: string[][][]): Locati
     return findPiece(grid, playerID);
 }
 
-export function findDragonLocation(grid: string[][][]): Location | undefined {
-    return findPiece(grid, DRAGON);
+export function findDragonLocation(grid: string[][][]): Location {
+    return findPiece(grid, DRAGON)!;
 }
 
 function findPiece(grid: string[][][], piece: string): Location | undefined {
@@ -416,8 +416,9 @@ export function endTurn(G: GameState, ctx: Ctx) {
     //          instead, it should enter an "endTurn" sort of stage, where
     //          we determine Dragon movement based on Bait or Dragon Die Roll.
     //          that's where our current "onEndTurn" logic should also land
-    ctx.events!.endTurn!();
+    triggerEndOfTurn(G, ctx);
 }
+
 
 function dragonEatsBait(G: GameState) {
     const dragonLocation = findDragonLocation(G.cells)!;
@@ -425,12 +426,31 @@ function dragonEatsBait(G: GameState) {
     _.pull(cell, BAIT);
 }
 
-export function onEndTurn(G: GameState, ctx: Ctx) {
-    pickUpPoo(G, ctx.currentPlayer);
+export function guideDragon(G: GameState, ctx: Ctx, targetLocation: Location) {
+    const dragonLocation = findDragonLocation(G.cells);
+    if (!isOrthogonal(dragonLocation, targetLocation)) {
+        return INVALID_MOVE;
+    }
 
+    const possibleDirections = findDirectionsForShortestDragonPaths(G, findPieces(G.cells, BAIT));
+    const guidedDirection = direction(dragonLocation, targetLocation);
+
+    console.log(possibleDirections);
+    console.log(guidedDirection);
+    if (!possibleDirections.includes(guidedDirection)) {
+        return INVALID_MOVE;
+    }
+
+    moveDragon(G, guidedDirection);
+    ctx.events?.endTurn();
+}
+
+function triggerEndOfTurn(G: GameState, ctx: Ctx) {
+    pickUpPoo(G, ctx.currentPlayer);
     dragonEatsBait(G);
 
     const baitLocations = findPieces(G.cells, BAIT);
+
     if (_.isEmpty(baitLocations)) {
         rollDragonDie(G, ctx);
 
@@ -440,9 +460,17 @@ export function onEndTurn(G: GameState, ctx: Ctx) {
         } else {
             createDragonPoo(G);
         }
+        ctx.events?.endTurn();
     } else {
         const possibleDirections = findDirectionsForShortestDragonPaths(G, baitLocations);
-        moveDragon(G, possibleDirections[0]);
+        if (possibleDirections.length === 1) {
+            // we can move the Dragon without input from the player
+            moveDragon(G, possibleDirections[0]);
+            ctx.events?.endTurn();
+        } else {
+            // we need input from the player
+            ctx.events?.setStage('guideDragon');
+        }
     }
 }
 

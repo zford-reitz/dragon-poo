@@ -60,7 +60,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 this.props.moves.placeBait({row: row, column: column});
                 this.setState({action: undefined, card: undefined, clicks: []});
             }
-
+        } else if (this.props.ctx.activePlayers![this.props.playerID!] === 'guideDragon') {
+            this.props.moves.guideDragon({row: row, column: column});
         } else {
             const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
 
@@ -164,6 +165,12 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 <button id="cancel" type="button" onClick={() => this.cancelAction()}>Cancel current action</button>;
         }
 
+        let guideDragonHint = undefined;
+        if (this.props.ctx.activePlayers![this.props.playerID!] === 'guideDragon') {
+            guideDragonHint =
+                <div id="guide-dragon-hint">Help the Dragon decide which way to go toward the bait...</div>;
+        }
+
         let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand
             .map((card, idx) => <button key={idx} type="button"
                                         onClick={() => this.onCardClick(card)}>{card.title}</button>);
@@ -190,6 +197,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 {!this.isKidGame() && <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
                 {pooCounts}
                 {cancelButton}
+                {guideDragonHint}
                 {winner}
                 <br/>
                 <br/>
