@@ -421,9 +421,11 @@ export function endTurn(G: GameState, ctx: Ctx) {
 
 
 function dragonEatsBait(G: GameState) {
-    const dragonLocation = findDragonLocation(G.cells)!;
-    const cell = G.cells[dragonLocation.row][dragonLocation.column];
-    _.pull(cell, BAIT);
+    const dragonLocation = findDragonLocation(G.cells);
+    if (dragonLocation) {
+        const cell = G.cells[dragonLocation.row][dragonLocation.column];
+        _.pull(cell, BAIT);
+    }
 }
 
 export function guideDragon(G: GameState, ctx: Ctx, targetLocation: Location) {
@@ -461,7 +463,7 @@ function triggerEndOfTurn(G: GameState, ctx: Ctx) {
             createDragonPoo(G);
         }
         ctx.events?.endTurn();
-    } else {
+    } else if (findPiece(G.cells, DRAGON)) {
         const possibleDirections = findDirectionsForShortestDragonPaths(G, baitLocations);
         if (possibleDirections.length === 1) {
             // we can move the Dragon without input from the player
