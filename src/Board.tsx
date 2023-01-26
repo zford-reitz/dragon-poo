@@ -6,6 +6,7 @@ import {canEnterBoard, canMoveGoblin, findBlockingWall, findPlayerLocation, isOr
 import {Card} from './Card';
 import {Location} from './location';
 import _ from 'lodash';
+import {PlayerID} from "boardgame.io";
 
 interface ClientState {
     action?: string;
@@ -66,9 +67,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
 
             if (playerLocation) {
-                this.props.moves.moveGoblin({row: row, column: column});
+                this.props.moves.moveGoblin(this.props.playerID, {row: row, column: column});
             } else {
-                this.props.moves.enterBoard(row, column);
+                this.props.moves.enterBoard(this.props.playerID, row, column);
             }
         }
     }
@@ -134,7 +135,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 const location = {row: i, column: j};
                 this.applyWallStyles(location, thisCellStyle);
 
-                if (isMoving && (canMoveGoblin(this.props.G, playerLocation, location) || canEnterBoard(this.props.G, this.props.ctx, i, j))) {
+                if (isMoving && (canMoveGoblin(this.props.G, playerLocation, location) || canEnterBoard({G: this.props.G}, this.props.playerID as PlayerID, i, j))) {
                     thisCellStyle.backgroundColor = 'pink';
                 }
 

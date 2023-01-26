@@ -1,8 +1,13 @@
-import {findPlayerLocation, movePiece, pickUpPoo, setupGame} from './dragon-poo';
+import {findPlayerLocation, movePiece, pickUpPoo, setupKidGame} from './dragon-poo';
 import {GameState} from './GameState';
 
+let G: GameState;
+
+beforeEach(() => {
+    G = setupKidGame(4);
+});
+
 it('player picks up no poo because there is no poo at their location', () => {
-    const G = setupGame();
     movePlayerTo(G, '0', 2, 0);
 
     pickUpPoo(G, '0');
@@ -11,7 +16,6 @@ it('player picks up no poo because there is no poo at their location', () => {
 });
 
 it('player picks up single poo at location', () => {
-    const G = setupGame();
     movePlayerTo(G, '0', 2, 0);
     G.cells[2][0].push('P');
     G.cells[1][0].push('P');
@@ -22,7 +26,6 @@ it('player picks up single poo at location', () => {
 });
 
 it('player picks up all poo at location', () => {
-    const G = setupGame();
     movePlayerTo(G, '0', 2, 0);
     G.cells[2][0].push('P');
     G.cells[2][0].push('P');
