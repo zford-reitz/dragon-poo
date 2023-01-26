@@ -1,5 +1,5 @@
 import {GameState} from './GameState';
-import {Game} from 'boardgame.io';
+import {Game, PlayerID} from 'boardgame.io';
 import {
     buildWall,
     endTurn,
@@ -10,13 +10,15 @@ import {
     setupGame,
     setupKidGame
 } from './dragon-poo';
+import {Location} from './location';
+import {Wall} from './wall';
 
 
 export const DragonPoo: Game<GameState> = {
     name: 'DragonPoo',
     minPlayers: 2,
     maxPlayers: 4,
-    setup: setupGame,
+    setup: ({ctx, random}) => setupGame(ctx.numPlayers, random),
     turn: {
         activePlayers: {
             currentPlayer: 'move'
@@ -27,14 +29,30 @@ export const DragonPoo: Game<GameState> = {
                 next: 'playCard'
             },
             playCard: {
-                moves: {buildWall, placeBait, endTurn}
+                moves: {
+                    buildWall: ({
+                                    G,
+                                    ctx,
+                                    random,
+                                    events
+                                }, playerId: PlayerID, cardContext: Wall) => buildWall(G, random, events, playerId, cardContext),
+                    placeBait: ({
+                                    G,
+                                    ctx,
+                                    random,
+                                    events
+                                }, playerId: PlayerID, location: Location) => placeBait(G, random, events, playerId, location),
+                    endTurn
+                }
             },
             guideDragon: {
-                moves: {guideDragon}
+                moves: {
+                    guideDragon
+                }
             }
         }
     },
-    endIf: (G: GameState) => {
+    endIf: ({G}) => {
         for (let playerID in G.players) {
             let player = G.players[playerID];
             if (player.poo >= 5) {
@@ -49,12 +67,12 @@ export const DragonPooKids: Game<GameState> = {
     name: 'DragonPooKids',
     minPlayers: 2,
     maxPlayers: 4,
-    setup: setupKidGame,
+    setup: ({ctx}) => setupKidGame(ctx.numPlayers),
     moves: {moveGoblin, enterBoard, endTurn},
     turn: {
         onMove: endTurn
     },
-    endIf: (G: GameState) => {
+    endIf: ({G}) => {
         for (let playerID in G.players) {
             let player = G.players[playerID];
             if (player.poo >= 3) {
