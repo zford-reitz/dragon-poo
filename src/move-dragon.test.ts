@@ -6,14 +6,14 @@ import {
     moveDragon,
     movePiece,
     placeWall,
-    setupGame,
+    setupKidGame,
     unsafeMoveDragon
 } from './dragon-poo';
 import * as _ from 'lodash';
 import {GameState} from './GameState';
 
 it('dragon moves one space left', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
 
     moveDragon(G, 'left');
 
@@ -22,7 +22,7 @@ it('dragon moves one space left', () => {
 });
 
 it('dragon bounces off of edge of board', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
 
     unsafeMoveDragon(G, 1, 0);
     moveDragon(G, 'left');
@@ -32,7 +32,7 @@ it('dragon bounces off of edge of board', () => {
 });
 
 it('dragon stays in initial location if wall is encountered', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
 
     placeWall(G, {row: 2, column: 2}, 'down');
     moveDragon(G, 'down');
@@ -41,7 +41,7 @@ it('dragon stays in initial location if wall is encountered', () => {
 });
 
 it('dragon eats wall if wall is encountered', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
 
     placeWall(G, {row: 2, column: 2}, 'down');
     moveDragon(G, 'down');
@@ -50,7 +50,7 @@ it('dragon eats wall if wall is encountered', () => {
 });
 
 it('dragon poos on command', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
 
     createDragonPoo(G);
 
@@ -60,7 +60,7 @@ it('dragon poos on command', () => {
 
 // TODO zeb if player is on target tile, that player is moved to their starting zone and all of their poo is placed on that tile
 it('dragon stomps on player, causing player to move back to starting zone and drop all poo', () => {
-    const G = setupGame();
+    const G = setupKidGame(2);
     G.players['0'].poo = 3;
     movePlayerTo(G, '0', 3, 2);
     const playerLocation = {row: 3, column: 2};
