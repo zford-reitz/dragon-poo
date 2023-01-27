@@ -10,9 +10,10 @@ const importedGames = [
     {game: DragonPoo, board: DragonPooBoard}
 ];
 
-export default () => (
+let lobby = () => (
     <div>
         <h1>Lobby</h1>
         <Lobby gameServer={server} lobbyServer={server} gameComponents={importedGames}/>
     </div>
 );
+export default lobby;

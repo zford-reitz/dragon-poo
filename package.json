@@ -22,7 +22,7 @@
   },
   "scripts": {
     "start": "node -r esm build/server.js",
-    "build": "CI=false && react-scripts --openssl-legacy-provider build && tsc --project tsconfig-server.json",
+    "build": "react-scripts --openssl-legacy-provider build && tsc --project tsconfig-server.json",
     "test": "react-scripts test",
     "dev": "react-scripts start",
     "eject": "react-scripts eject"

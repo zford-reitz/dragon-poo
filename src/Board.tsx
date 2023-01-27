@@ -125,7 +125,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         };
 
         const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-        const isMoving = this.props.isActive && (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move' || this.isKidGame());
+        const isMoving = this.props.isActive && (this.isKidGame() || (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move'));
 
         let tbody = [];
         for (let i = 0; i < 5; i++) {
@@ -221,12 +221,13 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         let cellContents: ReactElement[] = [];
 
         if (textualContents.includes('Dragon')) {
-            cellContents.push(<img src="icons/dragon.svg" width="50px"></img>);
+            cellContents.push(<img src="icons/dragon.svg" width="50px" alt="dragon"></img>);
         }
 
-        for (let p of _.filter(textualContents, e => e === 'P')) {
-            cellContents.push(<img src="icons/poo.svg" width="20px"></img>);
-        }
+        _.times(
+            _.countBy(textualContents, e => e === 'P').true,
+            () => cellContents.push(<img src="icons/poo.svg" width="20px" alt="poo"></img>)
+        )
 
         const playerToStyleMap = this.playerToStyleMap();
         for (let token of textualContents) {
