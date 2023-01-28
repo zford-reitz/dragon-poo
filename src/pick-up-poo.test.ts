@@ -12,7 +12,7 @@ it('player picks up no poo because there is no poo at their location', () => {
 
     pickUpPoo(G, '0');
 
-    expect(G.players[0].poo).toBe(0);
+    expect(G.pooCount[0]).toBe(0);
 });
 
 it('player picks up single poo at location', () => {
@@ -22,7 +22,7 @@ it('player picks up single poo at location', () => {
 
     pickUpPoo(G, '0');
 
-    expect(G.players[0].poo).toBe(1);
+    expect(G.pooCount[0]).toBe(1);
 });
 
 it('player picks up all poo at location', () => {
@@ -35,7 +35,7 @@ it('player picks up all poo at location', () => {
 
     pickUpPoo(G, '0');
 
-    expect(G.players[0].poo).toBe(4);
+    expect(G.pooCount[0]).toBe(4);
 });
 
 function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {

@@ -13,7 +13,7 @@ import {
 import {Card} from './Card';
 import {Location} from './location';
 import _ from 'lodash';
-import {PlayerID} from "boardgame.io";
+import {PlayerID} from 'boardgame.io';
 
 interface ClientState {
     action?: string;
@@ -148,12 +148,14 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 const location = {row: i, column: j};
                 this.applyWallStyles(location, thisCellStyle);
 
-                if (isMoving && (canMoveGoblin(this.props.G, playerLocation, location) || canEnterBoard({G: this.props.G}, this.props.playerID as PlayerID, i, j))) {
-                    thisCellStyle.backgroundColor = 'pink';
-                }
+                if (this.props.playerID === this.props.ctx.currentPlayer) {
+                    if (isMoving && (canMoveGoblin(this.props.G, playerLocation, location) || canEnterBoard({G: this.props.G}, this.props.playerID as PlayerID, i, j))) {
+                        thisCellStyle.backgroundColor = 'pink';
+                    }
 
-                if (this.state.action === 'Scurry' && canScurryGoblin(this.props.G, playerLocation, location)) {
-                    thisCellStyle.backgroundColor = 'pink';
+                    if (this.state.action === 'Scurry' && canScurryGoblin(this.props.G, playerLocation, location)) {
+                        thisCellStyle.backgroundColor = 'pink';
+                    }
                 }
 
                 const id = 5 * i + j;
@@ -170,10 +172,10 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         }
 
         let pooCounts = [];
-        for (let playerId in this.props.G.players) {
+        for (let playerId in this.props.G.pooCount) {
             pooCounts.push(
                 <div><span
-                    className={this.playerToStyleMap().get(playerId)}>Poo</span>: {this.props.G.players[playerId].poo}
+                    className={this.playerToStyleMap().get(playerId)}>Poo</span>: {this.props.G.pooCount[playerId]}
                 </div>
             );
         }
@@ -192,7 +194,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 <div id="guide-dragon-hint">Help the Dragon decide which way to go toward the bait...</div>;
         }
 
-        let playerHand = this.props.G.players[this.props.ctx.currentPlayer].hand
+        let playerHand = this.props.G.players[this.props.playerID!].hand
             .map((card, idx) => <button key={idx} type="button"
                                         onClick={() => this.onCardClick(card)}>{card.title}</button>);
 

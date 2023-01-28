@@ -61,7 +61,7 @@ it('dragon poos on command', () => {
 // TODO zeb if player is on target tile, that player is moved to their starting zone and all of their poo is placed on that tile
 it('dragon stomps on player, causing player to move back to starting zone and drop all poo', () => {
     const G = setupKidGame(2);
-    G.players['0'].poo = 3;
+    G.pooCount['0'] = 3;
     movePlayerTo(G, '0', 3, 2);
     const playerLocation = {row: 3, column: 2};
     moveDragon(G, 'down');

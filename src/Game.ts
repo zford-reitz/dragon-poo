@@ -11,6 +11,7 @@ import {
     setupGame,
     setupKidGame
 } from './dragon-poo';
+import {PlayerView} from 'boardgame.io/core';
 
 
 export const DragonPoo: Game<GameState> = {
@@ -18,6 +19,7 @@ export const DragonPoo: Game<GameState> = {
     minPlayers: 2,
     maxPlayers: 4,
     setup: ({ctx, random}) => setupGame(ctx.numPlayers, random),
+    playerView: PlayerView.STRIP_SECRETS,
     turn: {
         activePlayers: {
             currentPlayer: 'move'
@@ -43,9 +45,8 @@ export const DragonPoo: Game<GameState> = {
         }
     },
     endIf: ({G}) => {
-        for (let playerID in G.players) {
-            let player = G.players[playerID];
-            if (player.poo >= 5) {
+        for (let playerID in G.pooCount) {
+            if (G.pooCount[playerID] >= 5) {
                 return {winner: playerID};
             }
         }
@@ -63,9 +64,8 @@ export const DragonPooKids: Game<GameState> = {
         onMove: endTurn
     },
     endIf: ({G}) => {
-        for (let playerID in G.players) {
-            let player = G.players[playerID];
-            if (player.poo >= 3) {
+        for (let playerID in G.pooCount) {
+            if (G.pooCount[playerID] >= 3) {
                 return {winner: playerID};
             }
         }

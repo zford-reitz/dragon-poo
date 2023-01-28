@@ -6,6 +6,10 @@ export interface PlayerMap {
     [key: string]: Player;
 }
 
+export interface PooMap {
+    [key: string]: number;
+}
+
 export type DragonDieColor = 'orange' | 'blue' | 'green' | 'white' | 'brown';
 
 export interface GameState {
@@ -15,4 +19,5 @@ export interface GameState {
     dragonDieRoll: DragonDieColor;
     deck: Card[];
     discardPile: Card[];
+    pooCount: PooMap
 }

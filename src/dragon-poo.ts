@@ -3,12 +3,12 @@ import {Location} from './location';
 import {Wall} from './wall';
 import * as _ from 'lodash';
 import {Ctx, PlayerID} from 'boardgame.io';
-import {DragonDieColor, GameState, PlayerMap} from './GameState';
+import {DragonDieColor, GameState, PlayerMap, PooMap} from './GameState';
 import {Card} from './Card';
 import {Player} from './Player';
-import {possibleMoves} from "./dragon-bait-pathing";
-import {RandomAPI} from "boardgame.io/dist/types/src/plugins/random/random";
-import {EventsAPI} from "boardgame.io/dist/types/src/plugins/events/events";
+import {possibleMoves} from './dragon-bait-pathing';
+import {RandomAPI} from 'boardgame.io/dist/types/src/plugins/random/random';
+import {EventsAPI} from 'boardgame.io/dist/types/src/plugins/events/events';
 
 type ColorDirections = {
     orange: Direction;
@@ -63,14 +63,12 @@ function setupPlayers(numberOfPlayers: number): PlayerMap {
     const playerOrange: Player = {
         entranceRows: [1, 2, 3],
         entranceColumns: [0],
-        poo: 0,
         hand: []
     };
 
     const playerBlue: Player = {
         entranceRows: [0],
         entranceColumns: [1, 2, 3],
-        poo: 0,
         hand: []
     };
 
@@ -83,7 +81,6 @@ function setupPlayers(numberOfPlayers: number): PlayerMap {
         players['2'] = {
             entranceRows: [1, 2, 3],
             entranceColumns: [4],
-            poo: 0,
             hand: []
         };
     }
@@ -92,12 +89,28 @@ function setupPlayers(numberOfPlayers: number): PlayerMap {
         players['3'] = {
             entranceRows: [4],
             entranceColumns: [1, 2, 3],
-            poo: 0,
             hand: []
         };
     }
 
     return players;
+}
+
+function setupPoo(numberOfPlayers: number): PooMap {
+    let pooCounts: PooMap = {
+        '0': 0,
+        '1': 0
+    }
+
+    if (numberOfPlayers > 2) {
+        pooCounts['2'] = 0;
+    }
+
+    if (numberOfPlayers > 3) {
+        pooCounts['3'] = 0;
+    }
+
+    return pooCounts;
 }
 
 export function setupKidGame(numberOfPlayers: number) {
@@ -107,7 +120,8 @@ export function setupKidGame(numberOfPlayers: number) {
         walls: [],
         dragonDieRoll: 'brown',
         deck: [],
-        discardPile: []
+        discardPile: [],
+        pooCount: setupPoo(numberOfPlayers)
     };
 
     game.cells[2][2].push(DRAGON);
@@ -116,13 +130,15 @@ export function setupKidGame(numberOfPlayers: number) {
 }
 
 export function setupGame(numberOfPlayers: number, random: RandomAPI) {
+    let players = setupPlayers(numberOfPlayers);
     const game: GameState = {
-        players: setupPlayers(numberOfPlayers),
+        players: players,
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
         walls: [],
         dragonDieRoll: 'brown',
         deck: [],
-        discardPile: []
+        discardPile: [],
+        pooCount: setupPoo(numberOfPlayers)
     };
 
     game.deck.push(...Array<Card>(6).fill({
@@ -394,17 +410,16 @@ export function moveDragon(G: GameState, direction: Direction) {
     if (newDragonLocation) {
         const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
         _.remove(cell, e => e !== DRAGON && e !== 'P')
-            .map(playerId => G.players[playerId])
             .forEach(player => dropPooAndRun(G, player));
     }
 }
 
-function dropPooAndRun(G: GameState, player: Player): void {
-    for (let i = 0; i < player.poo; i++) {
+function dropPooAndRun(G: GameState, playerID: PlayerID): void {
+    for (let i = 0; i < G.pooCount[playerID]; i++) {
         createDragonPoo(G);
     }
 
-    player.poo = 0;
+    G.pooCount[playerID] = 0;
 }
 
 export function findBlockingWall(G: GameState, initialLocation: Location, newLocation: Location): Wall | undefined {
@@ -430,7 +445,7 @@ export function createDragonPoo(G: GameState) {
 export function pickUpPoo(G: GameState, playerID: string) {
     const playerLocation = findPlayerLocation(playerID, G.cells);
     if (playerLocation) {
-        G.players[playerID].poo += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === 'P').length;
+        G.pooCount[playerID] += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === 'P').length;
     }
 }
 
