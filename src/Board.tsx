@@ -2,7 +2,14 @@ import React, {CSSProperties, ReactElement} from 'react';
 import {BoardProps} from 'boardgame.io/react';
 import './App.css';
 import {DragonDieColor, GameState} from './GameState';
-import {canEnterBoard, canMoveGoblin, findBlockingWall, findPlayerLocation, isOrthogonal} from './dragon-poo';
+import {
+    canEnterBoard,
+    canMoveGoblin,
+    canScurryGoblin,
+    findBlockingWall,
+    findPlayerLocation,
+    isOrthogonal
+} from './dragon-poo';
 import {Card} from './Card';
 import {Location} from './location';
 import _ from 'lodash';
@@ -32,6 +39,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             console.log('setting up placing a wall');
         } else if (clicked.title === 'Bait') {
             this.setState({action: 'PlaceBait', card: clicked});
+        } else if (clicked.title === 'Scurry!') {
+            this.setState({action: 'Scurry', card: clicked});
         }
     }
 
@@ -60,6 +69,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             } else if (this.state.action === 'PlaceBait') {
                 this.props.moves.placeBait({row: row, column: column});
                 this.setState({action: undefined, card: undefined, clicks: []});
+            } else if (this.state.action === 'Scurry') {
+                this.props.moves.scurry({row: row, column: column});
+                this.setState({action: undefined, card: undefined, clicks: []});
             }
         } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'guideDragon') {
             this.props.moves.guideDragon({row: row, column: column});
@@ -67,9 +79,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
 
             if (playerLocation) {
-                this.props.moves.moveGoblin(this.props.playerID, {row: row, column: column});
+                this.props.moves.moveGoblin({row: row, column: column});
             } else {
-                this.props.moves.enterBoard(this.props.playerID, row, column);
+                this.props.moves.enterBoard(row, column);
             }
         }
     }
@@ -106,7 +118,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
 
             winner =
                 this.props.ctx.gameover.winner !== undefined ? (
-                    <div id="winner"><span>Winner: </span><span className={'player ' + winnerBackgroundColor}></span></div>
+                    <div id="winner"><span>Winner: </span><span className={'player ' + winnerBackgroundColor}></span>
+                    </div>
                 ) : (
                     <div id="winner">Draw!</div>
                 );
@@ -139,11 +152,16 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                     thisCellStyle.backgroundColor = 'pink';
                 }
 
+                if (this.state.action === 'Scurry' && canScurryGoblin(this.props.G, playerLocation, location)) {
+                    thisCellStyle.backgroundColor = 'pink';
+                }
+
                 const id = 5 * i + j;
                 let cellContents = this.convertCellContents(this.props.G.cells[i][j]);
 
                 cells.push(
-                    <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)} className={winnerBackgroundColor}>
+                    <td style={thisCellStyle} key={id} onClick={() => this.onClick(i, j)}
+                        className={winnerBackgroundColor}>
                         {cellContents}
                     </td>
                 );
@@ -154,7 +172,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         let pooCounts = [];
         for (let playerId in this.props.G.players) {
             pooCounts.push(
-                <div><span className={this.playerToStyleMap().get(playerId)}>Poo</span>: {this.props.G.players[playerId].poo}</div>
+                <div><span
+                    className={this.playerToStyleMap().get(playerId)}>Poo</span>: {this.props.G.players[playerId].poo}
+                </div>
             );
         }
 
@@ -195,7 +215,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 </div>
                 {!this.isKidGame() && <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>}
                 {this.dragonDie(this.props.G.dragonDieRoll)}
-                {!this.isKidGame() && <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
+                {!this.isKidGame() &&
+                    <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
                 {pooCounts}
                 {cancelButton}
                 {guideDragonHint}

@@ -1,5 +1,5 @@
 import {GameState} from './GameState';
-import {Game, PlayerID} from 'boardgame.io';
+import {Game} from 'boardgame.io';
 import {
     buildWall,
     endTurn,
@@ -7,11 +7,10 @@ import {
     guideDragon,
     moveGoblin,
     placeBait,
+    scurry,
     setupGame,
     setupKidGame
 } from './dragon-poo';
-import {Location} from './location';
-import {Wall} from './wall';
 
 
 export const DragonPoo: Game<GameState> = {
@@ -30,18 +29,9 @@ export const DragonPoo: Game<GameState> = {
             },
             playCard: {
                 moves: {
-                    buildWall: ({
-                                    G,
-                                    ctx,
-                                    random,
-                                    events
-                                }, playerId: PlayerID, cardContext: Wall) => buildWall(G, random, events, playerId, cardContext),
-                    placeBait: ({
-                                    G,
-                                    ctx,
-                                    random,
-                                    events
-                                }, playerId: PlayerID, location: Location) => placeBait(G, random, events, playerId, location),
+                    buildWall,
+                    placeBait,
+                    scurry,
                     endTurn
                 }
             },

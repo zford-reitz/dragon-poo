@@ -166,7 +166,7 @@ function drawCard(G: GameState, random: RandomAPI, drawingPlayer: Player) {
     drawingPlayer.hand.push(..._.pullAt(G.deck, 0));
 }
 
-export function canEnterBoard(game: {G: GameState}, playerId: PlayerID, row: number, column: number): boolean {
+export function canEnterBoard(game: { G: GameState }, playerId: PlayerID, row: number, column: number): boolean {
     const player = game.G.players[playerId];
 
     return !findPlayerLocation(playerId, game.G.cells) &&
@@ -175,14 +175,30 @@ export function canEnterBoard(game: {G: GameState}, playerId: PlayerID, row: num
         isValidMoveLocation(game.G, {row: row, column: column});
 }
 
-export function enterBoard(game: {G: GameState, events: EventsAPI}, playerId: PlayerID, row: number, column: number): void | 'INVALID_MOVE' {
-    if (canEnterBoard(game, playerId, row, column)) {
-        game.G.cells[row][column].push(playerId);
+export function enterBoard(game: { G: GameState, events: EventsAPI, playerID: PlayerID }, row: number, column: number): void | 'INVALID_MOVE' {
+    if (canEnterBoard(game, game.playerID, row, column)) {
+        game.G.cells[row][column].push(game.playerID);
 
         game.events.endStage();
     } else {
         return INVALID_MOVE;
     }
+}
+
+export function canScurryGoblin(G: GameState, initialLocation: Location | undefined, targetLocation: Location): boolean {
+    return initialLocation !== undefined
+        && isValidMoveLocation(G, targetLocation)
+        && isOrthogonal(initialLocation, targetLocation);
+}
+
+export function scurryGoblin(game: { G: GameState, playerID: PlayerID, events: EventsAPI }, targetLocation: Location): undefined | typeof INVALID_MOVE {
+    const initialLocation = findPlayerLocation(game.playerID, game.G.cells);
+
+    if (!canScurryGoblin(game.G, initialLocation, targetLocation)) {
+        return INVALID_MOVE;
+    }
+
+    movePiece(game.G, game.playerID, initialLocation, targetLocation);
 }
 
 export function canMoveGoblin(G: GameState, initialLocation: Location | undefined, targetLocation: Location): boolean {
@@ -192,14 +208,14 @@ export function canMoveGoblin(G: GameState, initialLocation: Location | undefine
         && !findBlockingWall(G, initialLocation, targetLocation);
 }
 
-export function moveGoblin(game: {G: GameState, events: EventsAPI}, playerId: PlayerID, targetLocation: Location): undefined | typeof INVALID_MOVE {
-    const initialLocation = findPlayerLocation(playerId, game.G.cells);
+export function moveGoblin(game: { G: GameState, events: EventsAPI, playerID: PlayerID }, targetLocation: Location): undefined | typeof INVALID_MOVE {
+    const initialLocation = findPlayerLocation(game.playerID, game.G.cells);
 
     if (!canMoveGoblin(game.G, initialLocation, targetLocation)) {
         return INVALID_MOVE;
     }
 
-    movePiece(game.G, playerId, initialLocation, targetLocation);
+    movePiece(game.G, game.playerID, initialLocation, targetLocation);
 
     game.events.endStage!();
 }
@@ -223,36 +239,55 @@ export function playCard(G: GameState, playerId: PlayerID, random: RandomAPI, ev
     endTurnForPlayer({G, random, events}, playerId);
 }
 
-export function buildWall(G: GameState, random: RandomAPI, events: EventsAPI, playerId: PlayerID, cardContext: Wall): void | 'INVALID_MOVE' {
-    const player = G.players[playerId];
+export function buildWall(game: { G: GameState, ctx: Ctx, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, cardContext: Wall): void | 'INVALID_MOVE' {
+    const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: 'Walls'});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
 
-    G.walls.push(cardContext);
+    game.G.walls.push(cardContext);
 
-    G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+    game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
-    drawCard(G, random, player);
-    endTurnForPlayer({G, random, events}, playerId);
+    drawCard(game.G, game.random, player);
+    endTurnForPlayer(game, game.playerID);
 }
 
-export function placeBait(G: GameState, random: RandomAPI, events: EventsAPI, playerId: PlayerID, location: Location): void | 'INVALID_MOVE' {
-    const player = G.players[playerId];
+export function placeBait(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
+    const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: 'Bait'});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
 
-    G.cells[location.row][location.column].push(BAIT);
+    game.G.cells[location.row][location.column].push(BAIT);
 
-    G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+    game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
-    drawCard(G, random, player);
-    endTurnForPlayer({G, random, events}, playerId);
+    drawCard(game.G, game.random, player);
+    endTurnForPlayer(game, game.playerID);
+}
+
+export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
+    const player = game.G.players[game.playerID];
+
+    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Scurry!'});
+    if (indexOfCardInHand === -1) {
+        return INVALID_MOVE;
+    }
+
+    let scurryResult = scurryGoblin(game, location);
+    if (scurryResult === INVALID_MOVE) {
+        return INVALID_MOVE;
+    }
+
+    game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+
+    drawCard(game.G, game.random, player);
+    endTurnForPlayer(game, game.playerID);
 }
 
 export function performCardEffect(G: GameState, played: Card) {
@@ -411,7 +446,7 @@ function getPiecesAt(G: GameState, location: Location) {
     return G.cells[location.row][location.column];
 }
 
-export function endTurn(game: {G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI}) {
+export function endTurn(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
     // TODO zeb this shouldn't directly end the turn
     //          instead, it should enter an "endTurn" sort of stage, where
     //          we determine Dragon movement based on Bait or Dragon Die Roll.
@@ -419,7 +454,7 @@ export function endTurn(game: {G: GameState, ctx: Ctx, random: RandomAPI, events
     triggerEndOfTurn(game.G, game.random, game.events, game.ctx.currentPlayer);
 }
 
-export function endTurnForPlayer(game: {G: GameState, random: RandomAPI, events: EventsAPI}, playerId: PlayerID) {
+export function endTurnForPlayer(game: { G: GameState, random: RandomAPI, events: EventsAPI }, playerId: PlayerID) {
     // TODO zeb this shouldn't directly end the turn
     //          instead, it should enter an "endTurn" sort of stage, where
     //          we determine Dragon movement based on Bait or Dragon Die Roll.
@@ -435,7 +470,7 @@ function dragonEatsBait(G: GameState) {
     }
 }
 
-export function guideDragon(game: {G: GameState, ctx: Ctx, events: EventsAPI}, targetLocation: Location): void | 'INVALID_MOVE' {
+export function guideDragon(game: { G: GameState, events: EventsAPI }, targetLocation: Location): void | 'INVALID_MOVE' {
     const dragonLocation = findDragonLocation(game.G.cells);
     if (!isOrthogonal(dragonLocation, targetLocation)) {
         return INVALID_MOVE;
