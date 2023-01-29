@@ -1,4 +1,4 @@
-import {placeBait} from './dragon-poo';
+import {BAIT, CARD_TITLES, placeBait} from './dragon-poo';
 import {GameState} from './GameState';
 import {Card} from './Card';
 import {Player} from './Player';
@@ -57,7 +57,7 @@ it('placing Bait places a Bait token on the selected tile', () => {
 
     placeBait(game, {row: 4, column: 2});
 
-    expect(game.G.cells[4][2]).toContain('Bait');
+    expect(game.G.cells[4][2]).toContain(BAIT);
 });
 
 function setupBoardWithMultipleBaitCardsInHand() {
@@ -66,10 +66,10 @@ function setupBoardWithMultipleBaitCardsInHand() {
     const G = {
         players: {
             '0': {
-                hand: [{title: 'Bait'} as Card, {title: 'Bait'} as Card]
+                hand: [{title: CARD_TITLES.BAIT} as Card, {title: CARD_TITLES.BAIT} as Card]
             } as Player
         },
-        deck: [toDraw],
+        secret: {deck: [toDraw]},
         discardPile: [],
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[]))
     } as unknown as GameState;
@@ -84,5 +84,5 @@ function setupBoardWithMultipleBaitCardsInHand() {
 }
 
 function isBait(card: Card) {
-    return card.title === 'Bait';
+    return card.title === CARD_TITLES.BAIT;
 }

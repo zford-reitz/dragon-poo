@@ -28,6 +28,13 @@ const DIRECTIONS_BY_COLOR: ColorDirections = {
 };
 export const DRAGON = 'Dragon';
 export const POO = 'P';
+export const CARD_TITLES = {
+    BAIT: 'Bait',
+    HIDE: 'Hide!',
+    SMASH_STUFF: 'Smash Stuff!',
+    WALLS: 'Walls',
+    SCURRY: 'Scurry!'
+}
 export const BAIT = 'Bait';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -123,7 +130,8 @@ export function setupKidGame(numberOfPlayers: number) {
         dragonDieRoll: 'brown',
         discardPile: [],
         deckSize: 0,
-        pooCount: setupPoo(numberOfPlayers)
+        pooCount: setupPoo(numberOfPlayers),
+        hidingMap: {}
     };
 
     game.cells[2][2].push(DRAGON);
@@ -143,27 +151,28 @@ export function setupGame(numberOfPlayers: number, random: RandomAPI) {
         },
         discardPile: [],
         deckSize: 0,
-        pooCount: setupPoo(numberOfPlayers)
+        pooCount: setupPoo(numberOfPlayers),
+        hidingMap: {}
     };
 
     game.secret.deck.push(...Array<Card>(6).fill({
-        title: 'Bait',
+        title: CARD_TITLES.BAIT,
         text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.',
     }));
     game.secret.deck.push(...Array<Card>(6).fill({
-        title: 'Walls',
+        title: CARD_TITLES.WALLS,
         text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
     }));
     game.secret.deck.push(...Array<Card>(4).fill({
-        title: 'Scurry!',
+        title: CARD_TITLES.SCURRY,
         text: 'Move one space, even over a Wall.',
     }));
     game.secret.deck.push(...Array<Card>(4).fill({
-        title: 'Smash Stuff!',
+        title: CARD_TITLES.SMASH_STUFF,
         text: 'Play this card to destroy any Poo or Wall on the Game Board',
     }));
     game.secret.deck.push({
-        title: 'Hidey Hole',
+        title: CARD_TITLES.HIDE,
         text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.',
     });
 
@@ -242,29 +251,10 @@ export function moveGoblin(game: { G: GameState, events: EventsAPI, playerID: Pl
     game.events.endStage!();
 }
 
-export function playCard(G: GameState, playerId: PlayerID, random: RandomAPI, events: EventsAPI, toPlay: Card) {
-    const player = G.players[playerId];
-
-    const indexOfCardInHand = _.findIndex(player.hand, {title: toPlay.title});
-    if (indexOfCardInHand === -1) {
-        return INVALID_MOVE;
-    }
-
-    const cardEffectResult = performCardEffect(G, toPlay);
-    if (cardEffectResult === INVALID_MOVE) {
-        return INVALID_MOVE;
-    }
-
-    player.hand.splice(indexOfCardInHand, 1);
-    G.discardPile.push(toPlay);
-    drawCard(G, random, player);
-    endTurnForPlayer({G, random, events}, playerId);
-}
-
 export function buildWall(game: { G: GameState, ctx: Ctx, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, cardContext: Wall): void | 'INVALID_MOVE' {
     const player = game.G.players[game.playerID];
 
-    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Walls'});
+    const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.WALLS});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
@@ -280,7 +270,7 @@ export function buildWall(game: { G: GameState, ctx: Ctx, playerID: PlayerID, ra
 export function placeBait(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
     const player = game.G.players[game.playerID];
 
-    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Bait'});
+    const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.BAIT});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
@@ -296,7 +286,7 @@ export function placeBait(game: { G: GameState, playerID: PlayerID, random: Rand
 export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
     const player = game.G.players[game.playerID];
 
-    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Scurry!'});
+    const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.SCURRY});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
@@ -315,7 +305,7 @@ export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomA
 export function smashStuff(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location, wallLocation?: Location): void | 'INVALID_MOVE' {
     const player = game.G.players[game.playerID];
 
-    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Smash Stuff!'});
+    const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.SMASH_STUFF});
     if (indexOfCardInHand === -1) {
         return INVALID_MOVE;
     }
@@ -340,21 +330,6 @@ export function smashStuff(game: { G: GameState, playerID: PlayerID, random: Ran
 
     drawCard(game.G, game.random, player);
     endTurnForPlayer(game, game.playerID);
-}
-
-export function performCardEffect(G: GameState, played: Card) {
-    switch (played.title) {
-        case 'Bait':
-            break;
-        case 'Scurry!':
-            break;
-        case 'Smash Stuff!':
-            break;
-        case 'Hidey Hole':
-            break;
-        default:
-            return INVALID_MOVE;
-    }
 }
 
 export function isOrthogonal(a: Location, b: Location): boolean {
@@ -422,7 +397,11 @@ function findPieces(grid: string[][][], piece: string): Location[] {
     return locations;
 }
 
-export function moveDragon(G: GameState, direction: Direction) {
+function isHiding(G: GameState, playerID: PlayerID) {
+    return G.hidingMap[playerID];
+}
+
+export function moveDragon(G: GameState, direction: Direction, random: RandomAPI) {
     const initialLocation = findDragonLocation(G.cells);
 
     if (initialLocation) {
@@ -445,8 +424,33 @@ export function moveDragon(G: GameState, direction: Direction) {
     const newDragonLocation = findDragonLocation(G.cells);
     if (newDragonLocation) {
         const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
-        _.remove(cell, e => e !== DRAGON && e !== POO)
+        cell.forEach(e => tryToHide(G, e, random));
+        _.remove(cell, e => e !== DRAGON && e !== POO && !isHiding(G, e))
             .forEach(player => dropPooAndRun(G, player));
+    }
+}
+
+function tryToHide(G: GameState, playerID: PlayerID, random: RandomAPI): void {
+    let player = G.players[playerID];
+    if (player && player.hand) {
+        const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.HIDE});
+        if (indexOfCardInHand !== -1) {
+            G.hidingMap[playerID] = true;
+            G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+            drawCard(G, random, player);
+        }
+    }
+}
+
+export function unhideGoblin(game: {G: GameState, ctx: Ctx}) {
+    if (isHiding(game.G, game.ctx.currentPlayer)) {
+        delete game.G.hidingMap[game.ctx.currentPlayer];
+        let playerLocation = findPlayerLocation(game.ctx.currentPlayer, game.G.cells);
+        if (playerLocation && getPiecesAt(game.G, playerLocation).includes(DRAGON)) {
+            dropPooAndRun(game.G, game.ctx.currentPlayer);
+        } else {
+            game.G.pooCount[game.ctx.currentPlayer]++;
+        }
     }
 }
 
@@ -521,7 +525,7 @@ function dragonEatsBait(G: GameState) {
     }
 }
 
-export function guideDragon(game: { G: GameState, events: EventsAPI }, targetLocation: Location): void | 'INVALID_MOVE' {
+export function guideDragon(game: { G: GameState, events: EventsAPI, random: RandomAPI }, targetLocation: Location): void | 'INVALID_MOVE' {
     const dragonLocation = findDragonLocation(game.G.cells);
     if (!isOrthogonal(dragonLocation, targetLocation)) {
         return INVALID_MOVE;
@@ -534,7 +538,7 @@ export function guideDragon(game: { G: GameState, events: EventsAPI }, targetLoc
         return INVALID_MOVE;
     }
 
-    moveDragon(game.G, guidedDirection);
+    moveDragon(game.G, guidedDirection, game.random);
     game.events.endTurn();
 }
 
@@ -549,7 +553,7 @@ function triggerEndOfTurn(G: GameState, random: RandomAPI, events: EventsAPI, pl
 
         const dragonMoveDirection = DIRECTIONS_BY_COLOR[G.dragonDieRoll];
         if (dragonMoveDirection) {
-            moveDragon(G, dragonMoveDirection);
+            moveDragon(G, dragonMoveDirection, random);
         } else {
             createDragonPoo(G);
         }
@@ -558,7 +562,7 @@ function triggerEndOfTurn(G: GameState, random: RandomAPI, events: EventsAPI, pl
         const possibleDirections = findDirectionsForShortestDragonPaths(G, baitLocations);
         if (possibleDirections.length === 1) {
             // we can move the Dragon without input from the player
-            moveDragon(G, possibleDirections[0]);
+            moveDragon(G, possibleDirections[0], random);
             events.endTurn();
         } else {
             // we need input from the player

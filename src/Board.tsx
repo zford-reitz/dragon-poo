@@ -6,6 +6,7 @@ import {
     canEnterBoard,
     canMoveGoblin,
     canScurryGoblin,
+    CARD_TITLES,
     DRAGON,
     findBlockingWall,
     findPlayerLocation,
@@ -36,14 +37,14 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     }
 
     onCardClick(clicked: Card) {
-        if (clicked.title === 'Walls') {
+        if (clicked.title === CARD_TITLES.WALLS) {
             this.setState({action: 'PlaceWallFirstSpace', card: clicked});
             console.log('setting up placing a wall');
-        } else if (clicked.title === 'Bait') {
+        } else if (clicked.title === CARD_TITLES.BAIT) {
             this.setState({action: 'PlaceBait', card: clicked});
-        } else if (clicked.title === 'Scurry!') {
+        } else if (clicked.title === CARD_TITLES.SCURRY) {
             this.setState({action: 'Scurry', card: clicked});
-        } else if (clicked.title === 'Smash Stuff!') {
+        } else if (clicked.title === CARD_TITLES.SMASH_STUFF) {
             this.setState({action: 'SmashStuffFirstSpace', card: clicked});
         }
     }
@@ -264,7 +265,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     private convertCellContents(textualContents: string[]): ReactElement[] {
         let cellContents: ReactElement[] = [];
 
-        if (textualContents.includes('Dragon')) {
+        if (textualContents.includes(DRAGON)) {
             cellContents.push(<img src="icons/dragon.svg" width="50px" alt="dragon"></img>);
         }
 
@@ -276,7 +277,17 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         const playerToStyleMap = this.playerToStyleMap();
         for (let token of textualContents) {
             if (playerToStyleMap.has(token)) {
-                cellContents.push(<span className={"player " + playerToStyleMap.get(token)}></span>);
+                let tokenStyles: string[] = [];
+                tokenStyles.push('player');
+                let tokenColorStyle = playerToStyleMap.get(token);
+                if (tokenColorStyle) {
+                    tokenStyles.push(tokenColorStyle);
+                }
+                if (this.props.G.hidingMap[token]) {
+                    tokenStyles.push('hiding');
+                }
+                let tokenStyle = _.join(tokenStyles, ' ');
+                cellContents.push(<span className={tokenStyle}></span>);
             }
         }
 

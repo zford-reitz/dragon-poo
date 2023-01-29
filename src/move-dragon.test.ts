@@ -11,40 +11,39 @@ import {
 } from './dragon-poo';
 import * as _ from 'lodash';
 import {GameState} from './GameState';
+import {RandomAPI} from 'boardgame.io/dist/types/src/plugins/random/random';
 
+let G: GameState;
+let random: RandomAPI;
+beforeEach(() => {
+    G = setupKidGame(2);
+    random = {} as RandomAPI;
+});
 it('dragon moves one space left', () => {
-    const G = setupKidGame(2);
-
-    moveDragon(G, 'left');
+    moveDragon(G, 'left', random);
 
     expect(G.cells[2][2]).not.toContain(DRAGON);
     expect(G.cells[2][1]).toContain(DRAGON);
 });
 
 it('dragon bounces off of edge of board', () => {
-    const G = setupKidGame(2);
-
     unsafeMoveDragon(G, 1, 0);
-    moveDragon(G, 'left');
+    moveDragon(G, 'left', random);
 
     expect(G.cells[1][0]).not.toContain(DRAGON);
     expect(G.cells[1][1]).toContain(DRAGON);
 });
 
 it('dragon stays in initial location if wall is encountered', () => {
-    const G = setupKidGame(2);
-
     placeWall(G, {row: 2, column: 2}, 'down');
-    moveDragon(G, 'down');
+    moveDragon(G, 'down', random);
 
     expect(G.cells[2][2]).toContain(DRAGON);
 });
 
 it('dragon eats wall if wall is encountered', () => {
-    const G = setupKidGame(2);
-
     placeWall(G, {row: 2, column: 2}, 'down');
-    moveDragon(G, 'down');
+    moveDragon(G, 'down', random);
 
     expect(G.walls).toEqual([]);
 });
@@ -60,11 +59,10 @@ it('dragon poos on command', () => {
 
 // TODO zeb if player is on target tile, that player is moved to their starting zone and all of their poo is placed on that tile
 it('dragon stomps on player, causing player to move back to starting zone and drop all poo', () => {
-    const G = setupKidGame(2);
     G.pooCount['0'] = 3;
     movePlayerTo(G, '0', 3, 2);
     const playerLocation = {row: 3, column: 2};
-    moveDragon(G, 'down');
+    moveDragon(G, 'down', random);
 
     expect(G.cells[3][2]).toContain(DRAGON);
     expect(G.cells[3][2]).not.toContain('0');

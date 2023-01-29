@@ -10,7 +10,7 @@ import {
     scurry,
     setupGame,
     setupKidGame,
-    smashStuff
+    smashStuff, unhideGoblin
 } from './dragon-poo';
 import {PlayerView} from 'boardgame.io/core';
 
@@ -22,6 +22,7 @@ export const DragonPoo: Game<GameState> = {
     setup: ({ctx, random}) => setupGame(ctx.numPlayers, random),
     playerView: PlayerView.STRIP_SECRETS,
     turn: {
+        onBegin: unhideGoblin,
         activePlayers: {
             currentPlayer: 'move'
         },

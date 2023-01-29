@@ -114,3 +114,7 @@
 .player-white {
     background-color: white;
 }
+
+.hiding {
+    opacity: 0.4;
+}

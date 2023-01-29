@@ -1,4 +1,4 @@
-import {getPiecesAt, POO, smashStuff} from './dragon-poo';
+import {CARD_TITLES, getPiecesAt, POO, smashStuff} from './dragon-poo';
 import {GameState} from './GameState';
 import {Card} from './Card';
 import {Player} from './Player';
@@ -81,13 +81,13 @@ function setupBoardWithMultipleSmashStuffCardsInHand() {
     const G: GameState = {
         players: {
             '0': {
-                hand: [{title: 'Smash Stuff!'} as Card, {title: 'Smash Stuff!'} as Card]
+                hand: [{title: CARD_TITLES.SMASH_STUFF} as Card, {title: CARD_TITLES.SMASH_STUFF} as Card]
             } as Player
         },
         pooCount: {
             '0': 0
         },
-        deck: [toDraw],
+        secret: {deck: [toDraw]},
         discardPile: [],
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[]))
     } as unknown as GameState;
@@ -109,5 +109,5 @@ function setupBoardWithMultipleSmashStuffCardsInHand() {
 }
 
 function isSmashStuff(card: Card) {
-    return card.title === 'Smash Stuff!';
+    return card.title === CARD_TITLES.SMASH_STUFF;
 }

@@ -10,6 +10,10 @@ export interface PooMap {
     [key: string]: number;
 }
 
+export interface HidingMap {
+    [key: string]: boolean;
+}
+
 export type DragonDieColor = 'orange' | 'blue' | 'green' | 'white' | 'brown';
 
 export interface GameState {
@@ -23,4 +27,5 @@ export interface GameState {
     discardPile: Card[];
     deckSize: number;
     pooCount: PooMap;
+    hidingMap: HidingMap;
 }

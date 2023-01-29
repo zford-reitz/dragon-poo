@@ -72,7 +72,7 @@ function setupBoardWithMultipleScurryCardsInHand() {
         pooCount: {
             '0': 0
         },
-        deck: [toDraw],
+        secret: {deck: [toDraw]},
         discardPile: [],
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[]))
     } as unknown as GameState;
