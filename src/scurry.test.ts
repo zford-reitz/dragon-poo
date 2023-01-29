@@ -36,12 +36,12 @@ function adjacentLocation() {
 }
 
 it('Scurrying draws a replacement card', () => {
-    const toDraw = game.G.deck[0];
+    const toDraw = game.G.secret.deck[0];
 
     scurry(game, adjacentLocation());
 
     expect(game.G.players['0'].hand).toContain(toDraw);
-    expect(game.G.deck.length).toBe(0);
+    expect(game.G.secret.deck.length).toBe(0);
 });
 
 it('trying to Scurry without a Scurry! Card in hand is an INVALID_MOVE', () => {

@@ -236,7 +236,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                     <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' :
                         <span className="player player-white"></span>}</div>
                 </div>
-                {!this.isKidGame() && <div className="deck">Deck (cards remaining): {this.props.G.deck?.length}</div>}
+                {!this.isKidGame() && <div className="deck">Deck (cards remaining): {this.props.G.deckSize}</div>}
                 {this.dragonDie(this.props.G.dragonDieRoll)}
                 {!this.isKidGame() &&
                     <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
@@ -254,7 +254,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     }
 
     private isKidGame() {
-        return this.props.G.deck.length === 0;
+        return this.props.G.deckSize === 0 && this.props.G.discardPile.length === 0;
     }
 
     private dragonDie(currentColor: DragonDieColor) {

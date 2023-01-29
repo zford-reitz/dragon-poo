@@ -116,12 +116,13 @@ function setupPoo(numberOfPlayers: number): PooMap {
 
 export function setupKidGame(numberOfPlayers: number) {
     const game: GameState = {
+        secret: {deck: []},
         players: setupPlayers(numberOfPlayers),
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
         walls: [],
         dragonDieRoll: 'brown',
-        deck: [],
         discardPile: [],
+        deckSize: 0,
         pooCount: setupPoo(numberOfPlayers)
     };
 
@@ -137,37 +138,40 @@ export function setupGame(numberOfPlayers: number, random: RandomAPI) {
         cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
         walls: [],
         dragonDieRoll: 'brown',
-        deck: [],
+        secret: {
+            deck: [],
+        },
         discardPile: [],
+        deckSize: 0,
         pooCount: setupPoo(numberOfPlayers)
     };
 
-    game.deck.push(...Array<Card>(6).fill({
+    game.secret.deck.push(...Array<Card>(6).fill({
         title: 'Bait',
         text: 'Place a Bait token on any Tile. The Dragon moves in the shortest path to Bait. When it gets there, remove Bait and replace it with Poo.',
     }));
-    game.deck.push(...Array<Card>(6).fill({
+    game.secret.deck.push(...Array<Card>(6).fill({
         title: 'Walls',
         text: 'Place a Wall between any Tile. Goblins cannot cross Walls. If the Dragon would cross a Wall, destroy the Wall instead.',
     }));
-    game.deck.push(...Array<Card>(4).fill({
+    game.secret.deck.push(...Array<Card>(4).fill({
         title: 'Scurry!',
         text: 'Move one space, even over a Wall.',
     }));
-    game.deck.push(...Array<Card>(4).fill({
+    game.secret.deck.push(...Array<Card>(4).fill({
         title: 'Smash Stuff!',
         text: 'Play this card to destroy any Poo or Wall on the Game Board',
     }));
-    game.deck.push({
+    game.secret.deck.push({
         title: 'Hidey Hole',
         text: 'Play this card when the Dragon enters your Tile. You do not drop your Poo and run away. If the Dragon leaves the Tile before you do, gain 1 Poo.',
     });
 
-    game.deck = random.Shuffle(game.deck);
-
+    game.secret.deck = random.Shuffle(game.secret.deck);
     for (let playerId in game.players) {
-        game.players[playerId].hand.push(..._.pullAt(game.deck, 0, 1, 2));
+        game.players[playerId].hand.push(..._.pullAt(game.secret.deck, 0, 1, 2));
     }
+    game.deckSize = game.secret.deck.length;
 
     game.cells[2][2].push(DRAGON);
 
@@ -175,12 +179,13 @@ export function setupGame(numberOfPlayers: number, random: RandomAPI) {
 }
 
 function drawCard(G: GameState, random: RandomAPI, drawingPlayer: Player) {
-    if (G.deck.length === 0) {
-        G.deck.push(...random.Shuffle(G.discardPile));
+    if (G.secret.deck.length === 0) {
+        G.secret.deck.push(...random.Shuffle(G.discardPile));
         G.discardPile.length = 0;
     }
 
-    drawingPlayer.hand.push(..._.pullAt(G.deck, 0));
+    drawingPlayer.hand.push(..._.pullAt(G.secret.deck, 0));
+    G.deckSize = G.secret.deck.length;
 }
 
 export function canEnterBoard(game: { G: GameState }, playerId: PlayerID, row: number, column: number): boolean {

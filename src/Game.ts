@@ -32,10 +32,22 @@ export const DragonPoo: Game<GameState> = {
             },
             playCard: {
                 moves: {
-                    buildWall,
-                    placeBait,
-                    scurry,
-                    smashStuff,
+                    buildWall: {
+                        move: buildWall,
+                        client: false
+                    },
+                    placeBait: {
+                        move: placeBait,
+                        client: false
+                    },
+                    scurry: {
+                        move: scurry,
+                        client: false
+                    },
+                    smashStuff: {
+                        move: smashStuff,
+                        client: false
+                    },
                     endTurn
                 }
             },

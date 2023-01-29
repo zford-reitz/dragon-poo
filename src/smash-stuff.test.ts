@@ -37,12 +37,12 @@ function pooLocation() {
 }
 
 it('Smashing stuff draws a replacement card', () => {
-    const toDraw = game.G.deck[0];
+    const toDraw = game.G.secret.deck[0];
 
     smashStuff(game, pooLocation());
 
     expect(game.G.players['0'].hand).toContain(toDraw);
-    expect(game.G.deck.length).toBe(0);
+    expect(game.G.secret.deck.length).toBe(0);
 });
 
 it('trying to Smashing stuff without a Smashing Stuff! Card in hand is an INVALID_MOVE', () => {

@@ -17,7 +17,10 @@ export interface GameState {
     cells: string[][][];
     walls: Wall[];
     dragonDieRoll: DragonDieColor;
-    deck: Card[];
+    secret: {
+        deck: Card[];
+    };
     discardPile: Card[];
-    pooCount: PooMap
+    deckSize: number;
+    pooCount: PooMap;
 }
