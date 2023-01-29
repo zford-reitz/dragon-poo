@@ -6,9 +6,11 @@ import {
     canEnterBoard,
     canMoveGoblin,
     canScurryGoblin,
+    DRAGON,
     findBlockingWall,
     findPlayerLocation,
-    isOrthogonal
+    isOrthogonal,
+    POO
 } from './dragon-poo';
 import {Card} from './Card';
 import {Location} from './location';
@@ -41,6 +43,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             this.setState({action: 'PlaceBait', card: clicked});
         } else if (clicked.title === 'Scurry!') {
             this.setState({action: 'Scurry', card: clicked});
+        } else if (clicked.title === 'Smash Stuff!') {
+            this.setState({action: 'SmashStuffFirstSpace', card: clicked});
         }
     }
 
@@ -71,6 +75,23 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 this.setState({action: undefined, card: undefined, clicks: []});
             } else if (this.state.action === 'Scurry') {
                 this.props.moves.scurry({row: row, column: column});
+                this.setState({action: undefined, card: undefined, clicks: []});
+            }
+            if (this.state.action === 'SmashStuffFirstSpace') {
+                this.setState({
+                    action: 'SmashStuffSecondSpace',
+                    clicks: [{row: row, column: column}]
+                });
+            } else if (this.state.action === 'SmashStuffSecondSpace') {
+                const location1: Location = _.first(this.state.clicks)!;
+                const location2: Location = {row: row, column: column};
+
+                if (_.isEqual(location1, location2)) {
+                    this.props.moves.smashStuff(location1);
+                } else {
+                    this.props.moves.smashStuff(location1, location2);
+                }
+
                 this.setState({action: undefined, card: undefined, clicks: []});
             }
         } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'guideDragon') {
@@ -248,7 +269,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         }
 
         _.times(
-            _.countBy(textualContents, e => e === 'P').true,
+            _.countBy(textualContents, e => e === POO).true,
             () => cellContents.push(<img src="icons/poo.svg" width="20px" alt="poo"></img>)
         )
 
@@ -260,7 +281,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         }
 
         const unhandledContents = _(textualContents)
-            .without('Dragon', 'P')
+            .without(DRAGON, POO)
             .without(...playerToStyleMap.keys())
             .join();
 

@@ -9,7 +9,8 @@ import {
     placeBait,
     scurry,
     setupGame,
-    setupKidGame
+    setupKidGame,
+    smashStuff
 } from './dragon-poo';
 import {PlayerView} from 'boardgame.io/core';
 
@@ -34,6 +35,7 @@ export const DragonPoo: Game<GameState> = {
                     buildWall,
                     placeBait,
                     scurry,
+                    smashStuff,
                     endTurn
                 }
             },

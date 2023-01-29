@@ -5,7 +5,7 @@ import {
     findPlayerLocation,
     moveDragon,
     movePiece,
-    placeWall,
+    placeWall, POO,
     setupKidGame,
     unsafeMoveDragon
 } from './dragon-poo';
@@ -55,7 +55,7 @@ it('dragon poos on command', () => {
     createDragonPoo(G);
 
     const dragonLocation = findDragonLocation(G.cells)!;
-    expect(G.cells[dragonLocation.row][dragonLocation.column]).toContain('P');
+    expect(G.cells[dragonLocation.row][dragonLocation.column]).toContain(POO);
 });
 
 // TODO zeb if player is on target tile, that player is moved to their starting zone and all of their poo is placed on that tile
@@ -69,8 +69,8 @@ it('dragon stomps on player, causing player to move back to starting zone and dr
     expect(G.cells[3][2]).toContain(DRAGON);
     expect(G.cells[3][2]).not.toContain('0');
     expect(findPlayerLocation('0', G.cells)).toBeFalsy();
-    expect(_.flattenDeep(G.cells).filter(piece => piece === 'P').length).toBe(3);
-    expect(_.filter(G.cells[playerLocation.row][playerLocation.column].filter(piece => piece === 'P')).length).toBe(3);
+    expect(_.flattenDeep(G.cells).filter(piece => piece === POO).length).toBe(3);
+    expect(_.filter(G.cells[playerLocation.row][playerLocation.column].filter(piece => piece === POO)).length).toBe(3);
 });
 
 function movePlayerTo(G: GameState, playerID: string, row: number, column: number) {

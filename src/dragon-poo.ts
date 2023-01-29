@@ -27,6 +27,7 @@ const DIRECTIONS_BY_COLOR: ColorDirections = {
     brown: undefined
 };
 export const DRAGON = 'Dragon';
+export const POO = 'P';
 export const BAIT = 'Bait';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -175,8 +176,8 @@ export function setupGame(numberOfPlayers: number, random: RandomAPI) {
 
 function drawCard(G: GameState, random: RandomAPI, drawingPlayer: Player) {
     if (G.deck.length === 0) {
-        G.deck = random.Shuffle(G.discardPile);
-        G.discardPile = [];
+        G.deck.push(...random.Shuffle(G.discardPile));
+        G.discardPile.length = 0;
     }
 
     drawingPlayer.hand.push(..._.pullAt(G.deck, 0));
@@ -306,6 +307,36 @@ export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomA
     endTurnForPlayer(game, game.playerID);
 }
 
+export function smashStuff(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location, wallLocation?: Location): void | 'INVALID_MOVE' {
+    const player = game.G.players[game.playerID];
+
+    const indexOfCardInHand = _.findIndex(player.hand, {title: 'Smash Stuff!'});
+    if (indexOfCardInHand === -1) {
+        return INVALID_MOVE;
+    }
+
+    if (wallLocation) {
+        // Smashing a Wall
+        let toSmash = findBlockingWall(game.G, location, wallLocation);
+        if (!toSmash) {
+            return INVALID_MOVE;
+        }
+        _.remove(game.G.walls, toSmash);
+    } else {
+        // Smashing a Poo
+        let pooIndex = _.indexOf(getPiecesAt(game.G, location), POO);
+        if (pooIndex === -1) {
+            return INVALID_MOVE;
+        }
+        _.pullAt(getPiecesAt(game.G, location), pooIndex);
+    }
+
+    game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
+
+    drawCard(game.G, game.random, player);
+    endTurnForPlayer(game, game.playerID);
+}
+
 export function performCardEffect(G: GameState, played: Card) {
     switch (played.title) {
         case 'Bait':
@@ -409,7 +440,7 @@ export function moveDragon(G: GameState, direction: Direction) {
     const newDragonLocation = findDragonLocation(G.cells);
     if (newDragonLocation) {
         const cell = G.cells[newDragonLocation.row][newDragonLocation.column];
-        _.remove(cell, e => e !== DRAGON && e !== 'P')
+        _.remove(cell, e => e !== DRAGON && e !== POO)
             .forEach(player => dropPooAndRun(G, player));
     }
 }
@@ -438,14 +469,14 @@ export function placeWall(G: GameState, location: Location, direction: Direction
 export function createDragonPoo(G: GameState) {
     const dragonLocation = findDragonLocation(G.cells);
     if (dragonLocation) {
-        getPiecesAt(G, dragonLocation).push('P');
+        getPiecesAt(G, dragonLocation).push(POO);
     }
 }
 
 export function pickUpPoo(G: GameState, playerID: string) {
     const playerLocation = findPlayerLocation(playerID, G.cells);
     if (playerLocation) {
-        G.pooCount[playerID] += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === 'P').length;
+        G.pooCount[playerID] += _.remove(getPiecesAt(G, playerLocation), (piece: string) => piece === POO).length;
     }
 }
 
@@ -457,7 +488,7 @@ export function rollDragonDie(G: GameState, random: RandomAPI) {
     }
 }
 
-function getPiecesAt(G: GameState, location: Location) {
+export function getPiecesAt(G: GameState, location: Location) {
     return G.cells[location.row][location.column];
 }
 

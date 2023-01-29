@@ -19,7 +19,7 @@ it('Scurrying moves a Scurry! card from Player\'s hand to the discard pile', () 
     const beforeNumberOfScurryCardsInHand = _.filter(game.G.players['0'].hand, isScurry).length;
     const beforeNumberOfScurryCardsInDiscardPile = _.filter(game.G.discardPile, isScurry).length;
 
-    scurry(game, irrelevantLocation());
+    scurry(game, adjacentLocation());
 
     const afterNumberOfScurryCardsInHand = _.filter(game.G.players['0'].hand, isScurry).length;
     const afterNumberOfScurryCardsInDiscardPile = _.filter(game.G.discardPile, isScurry).length;
@@ -31,14 +31,14 @@ it('Scurrying moves a Scurry! card from Player\'s hand to the discard pile', () 
         .toEqual(beforeNumberOfScurryCardsInDiscardPile + 1);
 });
 
-function irrelevantLocation() {
+function adjacentLocation() {
     return {row: 1, column: 1};
 }
 
 it('Scurrying draws a replacement card', () => {
     const toDraw = game.G.deck[0];
 
-    scurry(game, irrelevantLocation());
+    scurry(game, adjacentLocation());
 
     expect(game.G.players['0'].hand).toContain(toDraw);
     expect(game.G.deck.length).toBe(0);
@@ -48,26 +48,29 @@ it('trying to Scurry without a Scurry! Card in hand is an INVALID_MOVE', () => {
     const handFiller: Card = {title: '--InHandButNotPlayed--'} as Card;
     game.G.players['0'].hand = [handFiller];
 
-    const playCardResult = scurry(game, irrelevantLocation());
+    const playCardResult = scurry(game, adjacentLocation());
 
     expect(playCardResult).toBe(INVALID_MOVE);
 });
 
 it('Scurrying moves Player to target location', () => {
 
-    scurry(game, {row: 4, column: 2});
+    scurry(game, adjacentLocation());
 
-    expect(game.G.cells[4][2]).toContain('0');
+    expect(game.G.cells[adjacentLocation().row][adjacentLocation().column]).toContain('0');
 });
 
 function setupBoardWithMultipleScurryCardsInHand() {
     const toDraw: Card = {title: '--LastCardInDeck--'} as Card;
 
-    const G = {
+    const G: GameState = {
         players: {
             '0': {
                 hand: [{title: 'Scurry!'} as Card, {title: 'Scurry!'} as Card]
             } as Player
+        },
+        pooCount: {
+            '0': 0
         },
         deck: [toDraw],
         discardPile: [],
@@ -84,6 +87,9 @@ function setupBoardWithMultipleScurryCardsInHand() {
             return 1;
         }
     } as RandomAPI;
+
+    G.cells[0][1].push('0');
+
     return {G, playerID, events, random};
 }
 
