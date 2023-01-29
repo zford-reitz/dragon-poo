@@ -2,6 +2,9 @@
   "name": "dragon-poo",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -22,7 +25,7 @@
   },
   "scripts": {
     "start": "node -r esm build/server.js",
-    "build": "react-scripts --openssl-legacy-provider build && tsc --project tsconfig-server.json",
+    "build": "react-scripts build && tsc --project tsconfig-server.json",
     "test": "react-scripts test",
     "dev": "react-scripts start",
     "eject": "react-scripts eject"
