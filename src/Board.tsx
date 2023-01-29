@@ -237,13 +237,17 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                     <div className="start-zone-4">{piecesOnBoard.includes('3') ? '' :
                         <span className="player player-white"></span>}</div>
                 </div>
+                {this.props.playerID && <div>You are: {this.tokenForPlayerID(this.props.playerID)}</div>}
                 {!this.isKidGame() && <div className="deck">Deck (cards remaining): {this.props.G.deckSize}</div>}
                 {this.dragonDie(this.props.G.dragonDieRoll)}
                 {!this.isKidGame() &&
-                    <div className="player-hand">Player hand ({this.props.ctx.currentPlayer}): {playerHand}</div>}
+                    <div className="player-hand">Cards in hand: {playerHand}</div>}
                 {pooCounts}
                 {cancelButton}
                 {guideDragonHint}
+                <div>{this.hintText()}</div>
+
+                <div className="current-player-hint">Current player: {this.tokenForPlayerID(this.props.ctx.currentPlayer)}</div>
                 {winner}
                 <br/>
                 <br/>
@@ -276,18 +280,9 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
 
         const playerToStyleMap = this.playerToStyleMap();
         for (let token of textualContents) {
-            if (playerToStyleMap.has(token)) {
-                let tokenStyles: string[] = [];
-                tokenStyles.push('player');
-                let tokenColorStyle = playerToStyleMap.get(token);
-                if (tokenColorStyle) {
-                    tokenStyles.push(tokenColorStyle);
-                }
-                if (this.props.G.hidingMap[token]) {
-                    tokenStyles.push('hiding');
-                }
-                let tokenStyle = _.join(tokenStyles, ' ');
-                cellContents.push(<span className={tokenStyle}></span>);
+            let tokenSpan = this.tokenForPlayerID(token);
+            if (tokenSpan) {
+                cellContents.push(tokenSpan);
             }
         }
 
@@ -308,5 +303,53 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         map.set('2', 'player-green');
         map.set('3', 'player-white');
         return map;
+    }
+
+    private hintText() {
+        if (this.props.playerID !== this.props.ctx.currentPlayer) {
+            return 'Waiting on other player...';
+        } else if (this.state.action) {
+            if (this.state.action === 'PlaceWallFirstSpace') {
+                return 'Select first space for wall...';
+            } else if (this.state.action === 'PlaceWallSecondSpace') {
+                return 'Select second space for wall...';
+            } else if (this.state.action === 'PlaceBait') {
+                return 'Place bait on any space...';
+            } else if (this.state.action === 'Scurry') {
+                return 'Select space to scurry to...';
+            }
+            if (this.state.action === 'SmashStuffFirstSpace') {
+                return 'Smashing! Select a space with poo or a space on one side of a wall...';
+            } else if (this.state.action === 'SmashStuffSecondSpace') {
+                return 'Still smashing! Confirm space with poo or select space on other side of wall...';
+            }
+        } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'guideDragon') {
+            return 'Help the Dragon decide which way to go toward the bait...';
+        } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'playCard') {
+            return 'Select a card to play...';
+        } else {
+            const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
+
+            if (playerLocation) {
+                return 'Select a space to move to...';
+            } else {
+                return 'Select a space to enter the board...';
+            }
+        }
+    }
+
+    private tokenForPlayerID(playerID: string) {
+        let playerColorStyle = this.playerToStyleMap().get(playerID);
+        if (playerColorStyle) {
+            let tokenStyles: string[] = [];
+            tokenStyles.push('player');
+            tokenStyles.push(playerColorStyle);
+            if (this.props.G.hidingMap[playerID]) {
+                tokenStyles.push('hiding');
+            }
+            let tokenStyle = _.join(tokenStyles, ' ');
+            return <span className={tokenStyle}></span>;
+        }
+
     }
 }
