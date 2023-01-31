@@ -131,7 +131,8 @@ export function setupKidGame(numberOfPlayers: number) {
         discardPile: [],
         deckSize: 0,
         pooCount: setupPoo(numberOfPlayers),
-        hidingMap: {}
+        hidingMap: {},
+        currentPlayer: {}
     };
 
     game.cells[2][2].push(DRAGON);
@@ -152,7 +153,8 @@ export function setupGame(numberOfPlayers: number, random: RandomAPI) {
         discardPile: [],
         deckSize: 0,
         pooCount: setupPoo(numberOfPlayers),
-        hidingMap: {}
+        hidingMap: {},
+        currentPlayer: {}
     };
 
     game.secret.deck.push(...Array<Card>(6).fill({
@@ -207,10 +209,14 @@ export function canEnterBoard(game: { G: GameState }, playerId: PlayerID, row: n
 }
 
 export function enterBoard(game: { G: GameState, events: EventsAPI, playerID: PlayerID }, row: number, column: number): void | 'INVALID_MOVE' {
+    if (!game.G.currentPlayer.mustMove) {
+        return INVALID_MOVE;
+    }
+
     if (canEnterBoard(game, game.playerID, row, column)) {
         game.G.cells[row][column].push(game.playerID);
 
-        game.events.endStage();
+        game.G.currentPlayer.mustMove = false;
     } else {
         return INVALID_MOVE;
     }
@@ -239,7 +245,10 @@ export function canMoveGoblin(G: GameState, initialLocation: Location | undefine
         && !findBlockingWall(G, initialLocation, targetLocation);
 }
 
-export function moveGoblin(game: { G: GameState, events: EventsAPI, playerID: PlayerID }, targetLocation: Location): undefined | typeof INVALID_MOVE {
+export function moveGoblin(game: { G: GameState, playerID: PlayerID }, targetLocation: Location): undefined | typeof INVALID_MOVE {
+    if (!game.G.currentPlayer.mustMove) {
+        return INVALID_MOVE;
+    }
     const initialLocation = findPlayerLocation(game.playerID, game.G.cells);
 
     if (!canMoveGoblin(game.G, initialLocation, targetLocation)) {
@@ -248,10 +257,14 @@ export function moveGoblin(game: { G: GameState, events: EventsAPI, playerID: Pl
 
     movePiece(game.G, game.playerID, initialLocation, targetLocation);
 
-    game.events.endStage!();
+    game.G.currentPlayer.mustMove = false;
 }
 
 export function buildWall(game: { G: GameState, ctx: Ctx, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, cardContext: Wall): void | 'INVALID_MOVE' {
+    if (!game.G.currentPlayer.mustPlayCard) {
+        return INVALID_MOVE;
+    }
+
     const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.WALLS});
@@ -264,10 +277,14 @@ export function buildWall(game: { G: GameState, ctx: Ctx, playerID: PlayerID, ra
     game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
     drawCard(game.G, game.random, player);
-    endTurnForPlayer(game, game.playerID);
+    game.G.currentPlayer.mustPlayCard = false;
 }
 
 export function placeBait(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
+    if (!game.G.currentPlayer.mustPlayCard) {
+        return INVALID_MOVE;
+    }
+
     const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.BAIT});
@@ -280,10 +297,14 @@ export function placeBait(game: { G: GameState, playerID: PlayerID, random: Rand
     game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
     drawCard(game.G, game.random, player);
-    endTurnForPlayer(game, game.playerID);
+    game.G.currentPlayer.mustPlayCard = false;
 }
 
 export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location): void | 'INVALID_MOVE' {
+    if (!game.G.currentPlayer.mustPlayCard) {
+        return INVALID_MOVE;
+    }
+
     const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.SCURRY});
@@ -299,10 +320,14 @@ export function scurry(game: { G: GameState, playerID: PlayerID, random: RandomA
     game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
     drawCard(game.G, game.random, player);
-    endTurnForPlayer(game, game.playerID);
+    game.G.currentPlayer.mustPlayCard = false;
 }
 
 export function smashStuff(game: { G: GameState, playerID: PlayerID, random: RandomAPI, events: EventsAPI }, location: Location, wallLocation?: Location): void | 'INVALID_MOVE' {
+    if (!game.G.currentPlayer.mustPlayCard) {
+        return INVALID_MOVE;
+    }
+
     const player = game.G.players[game.playerID];
 
     const indexOfCardInHand = _.findIndex(player.hand, {title: CARD_TITLES.SMASH_STUFF});
@@ -329,7 +354,7 @@ export function smashStuff(game: { G: GameState, playerID: PlayerID, random: Ran
     game.G.discardPile.push(...player.hand.splice(indexOfCardInHand, 1));
 
     drawCard(game.G, game.random, player);
-    endTurnForPlayer(game, game.playerID);
+    game.G.currentPlayer.mustPlayCard = false;
 }
 
 export function isOrthogonal(a: Location, b: Location): boolean {
@@ -442,7 +467,7 @@ function tryToHide(G: GameState, playerID: PlayerID, random: RandomAPI): void {
     }
 }
 
-export function unhideGoblin(game: {G: GameState, ctx: Ctx}) {
+export function unhideGoblin(game: { G: GameState, ctx: Ctx }) {
     if (isHiding(game.G, game.ctx.currentPlayer)) {
         delete game.G.hidingMap[game.ctx.currentPlayer];
         let playerLocation = findPlayerLocation(game.ctx.currentPlayer, game.G.cells);
@@ -501,22 +526,6 @@ export function getPiecesAt(G: GameState, location: Location) {
     return G.cells[location.row][location.column];
 }
 
-export function endTurn(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
-    // TODO zeb this shouldn't directly end the turn
-    //          instead, it should enter an "endTurn" sort of stage, where
-    //          we determine Dragon movement based on Bait or Dragon Die Roll.
-    //          that's where our current "onEndTurn" logic should also land
-    triggerEndOfTurn(game.G, game.random, game.events, game.ctx.currentPlayer);
-}
-
-export function endTurnForPlayer(game: { G: GameState, random: RandomAPI, events: EventsAPI }, playerId: PlayerID) {
-    // TODO zeb this shouldn't directly end the turn
-    //          instead, it should enter an "endTurn" sort of stage, where
-    //          we determine Dragon movement based on Bait or Dragon Die Roll.
-    //          that's where our current "onEndTurn" logic should also land
-    triggerEndOfTurn(game.G, game.random, game.events, playerId);
-}
-
 function dragonEatsBait(G: GameState) {
     const dragonLocation = findDragonLocation(G.cells);
     if (dragonLocation) {
@@ -542,33 +551,58 @@ export function guideDragon(game: { G: GameState, events: EventsAPI, random: Ran
     game.events.endTurn();
 }
 
-function triggerEndOfTurn(G: GameState, random: RandomAPI, events: EventsAPI, playerId: PlayerID) {
-    pickUpPoo(G, playerId);
-    dragonEatsBait(G);
+function canEndTurn(game: { G: GameState }) {
+    return !game.G.currentPlayer.mustMove && !game.G.currentPlayer.mustPlayCard;
+}
 
-    const baitLocations = findPieces(G.cells, BAIT);
+export function onTurnBegin(game: { G: GameState, ctx: Ctx }) {
+    unhideGoblin(game);
+    requirePlayerMove(game);
+    requirePlayerPlayCard(game);
+}
+
+export function requirePlayerMove(game: { G: GameState }): void {
+    game.G.currentPlayer.mustMove = true;
+}
+
+function requirePlayerPlayCard(game: { G: GameState }): void {
+    game.G.currentPlayer.mustPlayCard = true;
+}
+
+export function checkEndTurn(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
+    if (!game.ctx.activePlayers && canEndTurn(game)) {
+        onTurnEnd(game);
+    }
+}
+
+export function onTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
+    pickUpPoo(game.G, game.ctx.currentPlayer);
+    dragonEatsBait(game.G);
+
+    const baitLocations = findPieces(game.G.cells, BAIT);
 
     if (_.isEmpty(baitLocations)) {
-        rollDragonDie(G, random);
+        rollDragonDie(game.G, game.random);
 
-        const dragonMoveDirection = DIRECTIONS_BY_COLOR[G.dragonDieRoll];
+        const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
         if (dragonMoveDirection) {
-            moveDragon(G, dragonMoveDirection, random);
+            moveDragon(game.G, dragonMoveDirection, game.random);
         } else {
-            createDragonPoo(G);
+            createDragonPoo(game.G);
         }
-        events.endTurn();
-    } else if (findPiece(G.cells, DRAGON)) {
-        const possibleDirections = findDirectionsForShortestDragonPaths(G, baitLocations);
+    } else if (findPiece(game.G.cells, DRAGON)) {
+        const possibleDirections = findDirectionsForShortestDragonPaths(game.G, baitLocations);
         if (possibleDirections.length === 1) {
             // we can move the Dragon without input from the player
-            moveDragon(G, possibleDirections[0], random);
-            events.endTurn();
+            moveDragon(game.G, possibleDirections[0], game.random);
         } else {
             // we need input from the player
-            events.setStage('guideDragon');
+            game.events.setStage('guideDragon');
+            return;
         }
     }
+
+    game.events.endTurn();
 }
 
 export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {

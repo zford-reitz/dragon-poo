@@ -2,81 +2,78 @@ import {GameState} from './GameState';
 import {Game} from 'boardgame.io';
 import {
     buildWall,
-    endTurn,
+    checkEndTurn,
     enterBoard,
     guideDragon,
     moveGoblin,
+    onTurnBegin,
+    onTurnEnd,
     placeBait,
     scurry,
     setupGame,
     setupKidGame,
-    smashStuff, unhideGoblin
+    smashStuff
 } from './dragon-poo';
 import {PlayerView} from 'boardgame.io/core';
 
 
 export const DragonPoo: Game<GameState> = {
-    name: 'DragonPoo',
-    minPlayers: 2,
-    maxPlayers: 4,
-    setup: ({ctx, random}) => setupGame(ctx.numPlayers, random),
-    playerView: PlayerView.STRIP_SECRETS,
-    turn: {
-        onBegin: unhideGoblin,
-        activePlayers: {
-            currentPlayer: 'move'
+        name: 'DragonPoo',
+        minPlayers: 2,
+        maxPlayers: 4,
+        setup: ({ctx, random}) => setupGame(ctx.numPlayers, random),
+        playerView: PlayerView.STRIP_SECRETS,
+        moves: {
+            moveGoblin,
+            enterBoard,
+            buildWall: {
+                move: buildWall,
+                client: false
+            },
+            placeBait: {
+                move: placeBait,
+                client: false
+            },
+            scurry: {
+                move: scurry,
+                client: false
+            },
+            smashStuff: {
+                move: smashStuff,
+                client: false
+            }
         },
-        stages: {
-            move: {
-                moves: {moveGoblin, enterBoard, endTurn},
-                next: 'playCard'
-            },
-            playCard: {
-                moves: {
-                    buildWall: {
-                        move: buildWall,
-                        client: false
-                    },
-                    placeBait: {
-                        move: placeBait,
-                        client: false
-                    },
-                    scurry: {
-                        move: scurry,
-                        client: false
-                    },
-                    smashStuff: {
-                        move: smashStuff,
-                        client: false
-                    },
-                    endTurn
+        turn: {
+            onBegin: onTurnBegin,
+            onMove: checkEndTurn,
+            stages: {
+                guideDragon: {
+                    moves: {
+                        guideDragon
+                    }
                 }
-            },
-            guideDragon: {
-                moves: {
-                    guideDragon
+            }
+        },
+        endIf: ({G}) => {
+            for (let playerID in G.pooCount) {
+                if (G.pooCount[playerID] >= 5) {
+                    return {winner: playerID};
                 }
             }
         }
-    },
-    endIf: ({G}) => {
-        for (let playerID in G.pooCount) {
-            if (G.pooCount[playerID] >= 5) {
-                return {winner: playerID};
-            }
-        }
-    }
 
-};
+    }
+;
 
 export const DragonPooKids: Game<GameState> = {
     name: 'DragonPooKids',
     minPlayers: 2,
     maxPlayers: 4,
     setup: ({ctx}) => setupKidGame(ctx.numPlayers),
-    moves: {moveGoblin, enterBoard, endTurn},
+    moves: {moveGoblin, enterBoard},
     turn: {
-        onMove: endTurn
+        maxMoves: 1,
+        onEnd: onTurnEnd,
     },
     endIf: ({G}) => {
         for (let playerID in G.pooCount) {

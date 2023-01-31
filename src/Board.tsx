@@ -160,7 +160,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         };
 
         const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-        const isMoving = this.props.isActive && (this.isKidGame() || (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.ctx.currentPlayer] === 'move'));
+        const isMoving = this.props.isActive && (this.isKidGame() || (this.props.G.currentPlayer.mustMove && !this.state.action));
 
         let tbody = [];
         for (let i = 0; i < 5; i++) {
@@ -247,7 +247,8 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
                 {guideDragonHint}
                 <div>{this.hintText()}</div>
 
-                <div className="current-player-hint">Current player: {this.tokenForPlayerID(this.props.ctx.currentPlayer)}</div>
+                <div className="current-player-hint">Current
+                    player: {this.tokenForPlayerID(this.props.ctx.currentPlayer)}</div>
                 {winner}
                 <br/>
                 <br/>
@@ -306,7 +307,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
     }
 
     private hintText() {
-        if (this.props.playerID !== this.props.ctx.currentPlayer) {
+        if (!this.props.isActive) {
             return 'Waiting on other player...';
         } else if (this.state.action) {
             if (this.state.action === 'PlaceWallFirstSpace') {
@@ -325,17 +326,26 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
             }
         } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'guideDragon') {
             return 'Help the Dragon decide which way to go toward the bait...';
-        } else if (this.props.ctx.activePlayers && this.props.ctx.activePlayers[this.props.playerID!] === 'playCard') {
-            return 'Select a card to play...';
         } else {
-            const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
+            let playerOptions: string[] = [];
 
-            if (playerLocation) {
-                return 'Select a space to move to...';
-            } else {
-                return 'Select a space to enter the board...';
+            if (this.props.G.currentPlayer.mustMove) {
+                const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
+
+                if (playerLocation) {
+                    playerOptions.push('Select a space to move to...');
+                } else {
+                    playerOptions.push('Select a space to enter the board...');
+                }
             }
+
+            if (this.props.G.currentPlayer.mustPlayCard) {
+                playerOptions.push('Select a card to play...');
+            }
+
+            return _.join(playerOptions, ' OR ');
         }
+
     }
 
     private tokenForPlayerID(playerID: string) {

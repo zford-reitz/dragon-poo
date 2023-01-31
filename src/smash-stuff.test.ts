@@ -89,7 +89,8 @@ function setupBoardWithMultipleSmashStuffCardsInHand() {
         },
         secret: {deck: [toDraw]},
         discardPile: [],
-        cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[]))
+        cells: Array.from(Array(5), () => Array.from(Array(5), () => [] as string[])),
+        currentPlayer: {}
     } as unknown as GameState;
     const playerID: PlayerID = '0';
     const events: EventsAPI = {

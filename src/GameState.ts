@@ -28,4 +28,5 @@ export interface GameState {
     deckSize: number;
     pooCount: PooMap;
     hidingMap: HidingMap;
+    currentPlayer: { mustMove?: boolean, mustPlayCard?: boolean };
 }
