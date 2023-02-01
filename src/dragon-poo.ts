@@ -132,7 +132,7 @@ export function setupKidGame(numberOfPlayers: number) {
         deckSize: 0,
         pooCount: setupPoo(numberOfPlayers),
         hidingMap: {},
-        currentPlayer: {}
+        currentPlayer: {mustMove: true}
     };
 
     game.cells[2][2].push(DRAGON);
@@ -603,6 +603,20 @@ export function onTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, eve
     }
 
     game.events.endTurn();
+}
+
+export function onKidTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
+    pickUpPoo(game.G, game.ctx.currentPlayer);
+
+    rollDragonDie(game.G, game.random);
+
+    const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
+    if (dragonMoveDirection) {
+        moveDragon(game.G, dragonMoveDirection, game.random);
+    } else {
+        createDragonPoo(game.G);
+    }
+
 }
 
 export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {

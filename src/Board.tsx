@@ -160,7 +160,7 @@ export class DragonPooBoard extends React.Component<BoardProps<GameState>, Clien
         };
 
         const playerLocation = findPlayerLocation(this.props.ctx.currentPlayer, this.props.G.cells);
-        const isMoving = this.props.isActive && (this.isKidGame() || (this.props.G.currentPlayer.mustMove && !this.state.action));
+        const isMoving = this.props.isActive && this.props.G.currentPlayer.mustMove && !this.state.action;
 
         let tbody = [];
         for (let i = 0; i < 5; i++) {

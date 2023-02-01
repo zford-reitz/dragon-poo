@@ -6,9 +6,10 @@ import {
     enterBoard,
     guideDragon,
     moveGoblin,
+    onKidTurnEnd,
     onTurnBegin,
-    onTurnEnd,
     placeBait,
+    requirePlayerMove,
     scurry,
     setupGame,
     setupKidGame,
@@ -73,7 +74,8 @@ export const DragonPooKids: Game<GameState> = {
     moves: {moveGoblin, enterBoard},
     turn: {
         maxMoves: 1,
-        onEnd: onTurnEnd,
+        onEnd: onKidTurnEnd,
+        onBegin: requirePlayerMove
     },
     endIf: ({G}) => {
         for (let playerID in G.pooCount) {
