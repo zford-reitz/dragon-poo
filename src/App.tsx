@@ -1,19 +1,19 @@
 import React from 'react';
-import {Lobby} from 'boardgame.io/react';
-import {DragonPoo, DragonPooKids} from './Game';
-import {DragonPooBoard} from './Board';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import LocalApp from './LocalApp';
+import DragonPooLobby from './DragonPooLobby';
+import Layout from './Layout';
+import LocalAppKids from './LocalAppKids';
 
-const {protocol, hostname, port} = window.location;
-const server = `${protocol}//${hostname}:${port}`;
-const importedGames = [
-    {game: DragonPooKids, board: DragonPooBoard},
-    {game: DragonPoo, board: DragonPooBoard}
-];
-
-let lobby = () => (
-    <div>
-        <h1>Lobby</h1>
-        <Lobby gameServer={server} lobbyServer={server} gameComponents={importedGames}/>
-    </div>
+let app = () => (
+    <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<Layout/>}>
+                <Route index element={<DragonPooLobby/>}/>
+                <Route path="local" element={<LocalApp/>}/>
+                <Route path="local-kids" element={<LocalAppKids/>}/>
+            </Route>
+        </Routes>
+    </BrowserRouter>
 );
-export default lobby;
+export default app;

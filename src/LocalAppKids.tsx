@@ -1,12 +1,12 @@
 import React from 'react';
 import {Client} from 'boardgame.io/react';
-import {DragonPoo} from './Game';
-import {DragonPooBoard} from './Board';
+import {DragonPooKids} from './Game';
 import {Local} from 'boardgame.io/multiplayer';
+import {SharedDragonPooBoard} from './SharedBoard';
 
 const DragonPooClient = Client({
-    game: DragonPoo,
-    board: DragonPooBoard,
+    game: DragonPooKids,
+    board: SharedDragonPooBoard,
     numPlayers: 4,
     multiplayer: Local(),
 });
