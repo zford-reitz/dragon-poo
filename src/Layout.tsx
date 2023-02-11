@@ -1,5 +1,6 @@
 import React from "react";
-import {Link, Outlet} from "react-router-dom";
+import {NavLink, Outlet} from "react-router-dom";
+import './Layout.css';
 
 const Layout = () => {
     return (
@@ -7,13 +8,13 @@ const Layout = () => {
             <nav>
                 <ul>
                     <li>
-                        <Link to="/">Online</Link>
+                        <NavLink to="/">Online</NavLink>
                     </li>
                     <li>
-                        <Link to="/local">Local</Link>
+                        <NavLink to="/local">Local</NavLink>
                     </li>
                     <li>
-                        <Link to="/local-kids">Local Kids</Link>
+                        <NavLink to="/local-kids">Local Kids</NavLink>
                     </li>
                 </ul>
             </nav>
