@@ -577,28 +577,31 @@ export function checkEndTurn(game: { G: GameState, ctx: Ctx, random: RandomAPI, 
 
 export function onTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
     pickUpPoo(game.G, game.ctx.currentPlayer);
-    dragonEatsBait(game.G);
 
-    const baitLocations = findPieces(game.G.cells, BAIT);
+    if (!isVictory(game)) {
+        dragonEatsBait(game.G);
 
-    if (_.isEmpty(baitLocations)) {
-        rollDragonDie(game.G, game.random);
+        const baitLocations = findPieces(game.G.cells, BAIT);
 
-        const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
-        if (dragonMoveDirection) {
-            moveDragon(game.G, dragonMoveDirection, game.random);
-        } else {
-            createDragonPoo(game.G);
-        }
-    } else if (findPiece(game.G.cells, DRAGON)) {
-        const possibleDirections = findDirectionsForShortestDragonPaths(game.G, baitLocations);
-        if (possibleDirections.length === 1) {
-            // we can move the Dragon without input from the player
-            moveDragon(game.G, possibleDirections[0], game.random);
-        } else {
-            // we need input from the player
-            game.events.setStage('guideDragon');
-            return;
+        if (_.isEmpty(baitLocations)) {
+            rollDragonDie(game.G, game.random);
+
+            const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
+            if (dragonMoveDirection) {
+                moveDragon(game.G, dragonMoveDirection, game.random);
+            } else {
+                createDragonPoo(game.G);
+            }
+        } else if (findPiece(game.G.cells, DRAGON)) {
+            const possibleDirections = findDirectionsForShortestDragonPaths(game.G, baitLocations);
+            if (possibleDirections.length === 1) {
+                // we can move the Dragon without input from the player
+                moveDragon(game.G, possibleDirections[0], game.random);
+            } else {
+                // we need input from the player
+                game.events.setStage('guideDragon');
+                return;
+            }
         }
     }
 
@@ -608,15 +611,33 @@ export function onTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, eve
 export function onKidTurnEnd(game: { G: GameState, ctx: Ctx, random: RandomAPI, events: EventsAPI }) {
     pickUpPoo(game.G, game.ctx.currentPlayer);
 
-    rollDragonDie(game.G, game.random);
+    if (!isKidVictory(game)) {
+        rollDragonDie(game.G, game.random);
 
-    const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
-    if (dragonMoveDirection) {
-        moveDragon(game.G, dragonMoveDirection, game.random);
-    } else {
-        createDragonPoo(game.G);
+        const dragonMoveDirection = DIRECTIONS_BY_COLOR[game.G.dragonDieRoll];
+        if (dragonMoveDirection) {
+            moveDragon(game.G, dragonMoveDirection, game.random);
+        } else {
+            createDragonPoo(game.G);
+        }
     }
 
+}
+
+export function isVictory(game: {G: GameState}): {winner: String} | undefined {
+    return isGeneralVictory(game, 5);
+}
+
+export function isKidVictory(game: {G: GameState}): {winner: String} | undefined {
+    return isGeneralVictory(game, 3);
+}
+
+function isGeneralVictory(game: {G: GameState}, requiredPooCount: number): {winner: String} | undefined {
+    for (let playerID in game.G.pooCount) {
+        if (game.G.pooCount[playerID] >= requiredPooCount) {
+            return {winner: playerID};
+        }
+    }
 }
 
 export function isBetween(wall: Wall, initialLocation: Location, newLocation: Location): boolean {
