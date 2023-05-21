@@ -431,14 +431,14 @@ export function moveDragon(G: GameState, direction: Direction, random: RandomAPI
 
     if (initialLocation) {
         let newLocation = moveFrom(initialLocation, direction);
+        if (!isLocationOnBoard(G, newLocation)) {
+            newLocation = moveFrom(initialLocation, bounce(direction));
+        }
+
         const blockingWall = findBlockingWall(G, initialLocation, newLocation);
         if (blockingWall) {
             _.remove(G.walls, blockingWall);
         } else {
-            if (!isLocationOnBoard(G, newLocation)) {
-                newLocation = moveFrom(initialLocation, bounce(direction));
-            }
-
             movePiece(G, DRAGON, initialLocation, newLocation);
         }
     }

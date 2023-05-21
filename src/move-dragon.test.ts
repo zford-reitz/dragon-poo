@@ -48,6 +48,17 @@ it('dragon eats wall if wall is encountered', () => {
     expect(G.walls).toEqual([]);
 });
 
+it('dragon stays in initial location if wall is encountered after bouncing off edge of board', () => {
+    unsafeMoveDragon(G, 1, 0);
+    placeWall(G, {row: 1, column: 0}, 'right');
+    moveDragon(G, 'left', random);
+
+    expect(G.cells[1][0]).toContain(DRAGON);
+    expect(G.cells[1][1]).not.toContain(DRAGON);
+    expect(G.walls).toEqual([]);
+});
+
+
 it('dragon poos on command', () => {
     const G = setupKidGame(2);
 
